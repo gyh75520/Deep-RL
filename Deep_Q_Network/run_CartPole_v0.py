@@ -24,7 +24,7 @@ RL = Agent(
 total_steps = 0
 
 
-for i_episode in range(70):
+for i_episode in range(200):
 
     observation = env.reset()
     ep_r = 0

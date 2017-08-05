@@ -18,6 +18,7 @@ class Neural_Networks:
         n_features,  # 特征数，也就是输入的矩阵的列数
         neurons_per_layer=np.array([10]),  # 隐藏层每层神经元数
         activation_function=tf.nn.relu,  # 激活函数
+        Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.RMSPropOptimizer..
         learning_rate=0.01,  # 学习速率
         w_initializer=tf.random_normal_initializer(0., 0.3),
         b_initializer=tf.constant_initializer(0.1),
@@ -28,6 +29,7 @@ class Neural_Networks:
         self.neurons_per_layer = neurons_per_layer
         self.activation_function = activation_function
         self.lr = learning_rate
+        self.Optimizer = Optimizer
         self.w_initializer = w_initializer
         self.b_initializer = b_initializer
         self.output_graph = output_graph
@@ -101,7 +103,7 @@ class Neural_Networks:
                 tf.summary.scalar('loss', self.loss)
 
         with tf.variable_scope('train'):
-            self.train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
+            self.train_op = self.Optimizer(self.lr).minimize(self.loss)
 
         # ------------------ 创建 target 神经网络, 提供 target Q ------------------
         self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')
