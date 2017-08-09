@@ -7,6 +7,7 @@ using:
 """
 
 import numpy as np
+import random
 # from RL_Brain import Neural_Networks as brain
 
 
@@ -14,7 +15,7 @@ class Agent:
     def __init__(
         self,
         brain,  # 使用的神经网络
-        n_features,  # 特征数
+        observation_space,
         n_actions,  # 动作数
         reward_decay=0.9,  # gamma参数
         MAX_EPSILON=0.9,  # epsilon 的最大值
@@ -25,7 +26,7 @@ class Agent:
         replace_target_iter=300,  # 更换 target_net 的步数
     ):
         self.brain = brain
-        self.n_features = n_features
+        self.observation_space = observation_space
         self.n_actions = n_actions
         self.gamma = reward_decay
         self.MAX_EPSILON = MAX_EPSILON
@@ -42,19 +43,13 @@ class Agent:
         self.learn_step_counter = 0
 
         # 初始化全 0 记忆 [s, a, r, s_]
-        self.memory = np.zeros((self.memory_size, self.n_features * 2 + 2))
+        self.memory = []
 
     def store_memory(self, s, a, r, s_):
-        if not hasattr(self, 'memory_counter'):
-            self.memory_counter = 0
 
-        transition = np.hstack((s, [a, r], s_))
-
-        # 总 memory 大小是固定的, 如果超出总大小, 旧 memory 就被新 memory 替换
-        index = self.memory_counter % self.memory_size
-        self.memory[index, :] = transition
-
-        self.memory_counter += 1
+        self.memory.append((s, a, r, s_))
+        if len(self.memory) > self.memory_size:
+            self.memory.pop(0)
 
     def choose_action(self, observation):
         # 统一shape (1, size_of_observation)
@@ -76,27 +71,31 @@ class Agent:
             print('epsilon:', self.epsilon, '\n')
 
         # 从 memory 中随机抽取 batch_size 大小的记忆
-        if self.memory_counter > self.memory_size:
-            sample_index = np.random.choice(self.memory_size, size=self.batch_size)
-        else:
-            sample_index = np.random.choice(self.memory_counter, size=self.batch_size)
-        batch_memory = self.memory[sample_index, :]
+        batch_size = min(self.batch_size, len(self.memory))
 
+        batch_memory = random.sample(self.memory, batch_size)
+
+        no_state = np.zeros(self.observation_space.shape)
+        states = np.array([o[0] for o in batch_memory])
+        states_ = np.array([(no_state if o[3] is None else o[3]) for o in batch_memory])
+        action = np.array([o[1] for o in batch_memory])
+        reward = np.array([o[2] for o in batch_memory])
         # 获取 q_next (target_net 产生了 q) 和 q_eval(eval_net 产生的 q)
-        q_next = self.brain.predict_eval_action(batch_memory[:, -self.n_features:])
-        q_eval = self.brain.predict_target_action(batch_memory[:, :self.n_features])
+        q_next = self.brain.predict_eval_action(states_)
+        q_eval = self.brain.predict_target_action(states)
 
         # 计算 q_target
         q_target = q_eval.copy()
-
-        batch_index = np.arange(self.batch_size, dtype=np.int32)
-        eval_act_index = batch_memory[:, self.n_features].astype(int)
-        reward = batch_memory[:, self.n_features + 1]
+        # print('\nstates:', states.shape)
+        # print('\nq_target:', q_target.shape)
+        batch_index = np.arange(batch_size, dtype=np.int32)
+        eval_act_index = action.astype(int)
+        # reward = batch_memory[:, self.n_features + 1]
 
         q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
 
         # 训练 eval 神经网络
-        self.cost = self.brain.train(batch_memory[:, :self.n_features], q_target, self.learn_step_counter)
+        self.cost = self.brain.train(states, q_target, self.learn_step_counter)
         self.cost_his.append(self.cost)
 
         # 逐渐减少 epsilon, 降低行为的随机性

@@ -41,7 +41,7 @@ for i_episode in range(10):
         position, velocity = observation_
 
         # the higher the better
-        reward = abs(position - (-0.5))     # r in [0, 1]
+        # reward = abs(position - (-0.5))     # r in [0, 1]
 
         RL.store_memory(observation, action, reward, observation_)
 
