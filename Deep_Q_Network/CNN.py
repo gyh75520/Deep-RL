@@ -9,33 +9,43 @@ using:
 import tensorflow as tf
 import numpy as np
 import re
-import matplotlib.pyplot as plt
 
 
 class CNN:
     def __init__(
         self,
         n_actions,  # 动作数，也就是输出层的神经元数
-        n_features_width,  # 特征数，也就是输入的矩阵的列数
-        n_features_height,
-        n_features_depth,
-        neurons_per_layer=np.array([32, 64]),  # 隐藏层每层神经元数
+        observation_width,  # 图片的width
+        observation_height,  # 图片的height
+        observation_depth,  # 图片的depth
+        filters_per_layer=np.array([32, 64]),  # Conv_and_Pool_Layer i 层中 卷积的filters
         activation_function=tf.nn.relu,  # 激活函数
+        kernel_size=(5, 5),  # 卷积核的size
+        conv_strides=(1, 1),  # 卷积层的strides
+        padding='same',  # same or valid
+        b_initializer=tf.zeros_initializer(),  # tf.constant_initializer(0.1)
+        pooling_function=tf.layers.max_pooling2d,  # max_pooling2d or average_pooling2d
+        pool_size=(2, 2),  # pooling的size
+        pool_strides=(2, 2),  # pooling的strides
         Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.RMSPropOptimizer..
         learning_rate=0.01,  # 学习速率
-        w_initializer=tf.random_normal_initializer(0., 0.3),
-        b_initializer=tf.constant_initializer(0.1),
         output_graph=False,  # 使用tensorboard
     ):
         self.n_actions = n_actions
-        self.n_features_width = n_features_width
-        self.n_features_height = n_features_height
-        self.n_features_depth = n_features_depth
-        self.neurons_per_layer = neurons_per_layer
+        self.observation_width = observation_width
+        self.observation_height = observation_height
+        self.observation_depth = observation_depth
+        self.filters_per_layer = filters_per_layer
         self.activation_function = activation_function
+        self.kernel_size = kernel_size
+        self.conv_strides = conv_strides
+        self.padding = padding
+        self.b_initializer = b_initializer
+        self.pooling_function = pooling_function
+        self.pool_size = pool_size
+        self.pool_strides = pool_strides
         self.lr = learning_rate
         self.Optimizer = Optimizer
-        self.w_initializer = w_initializer
         self.b_initializer = b_initializer
         self.output_graph = output_graph
         self._build_net()
@@ -57,53 +67,53 @@ class CNN:
         def add_conv_and_pool_layer(
             inputs,
             n_layer,  # 当前层是第几层
-            c_names,
             activation_function=tf.nn.relu,  # 激活函数
             filters=32,
-            kernel_size=(5, 5),
-            conv_strides=(1, 1),
-            padding='same',
-            bias_initializer=tf.zeros_initializer(),
-            pooling_function=tf.layers.max_pooling2d,
-            pool_size=(2, 2),
-            pool_strides=(2, 2),
+            kernel_size=(5, 5),  # 卷积核的size
+            conv_strides=(1, 1),  # 卷积层的strides
+            padding='same',  # same or valid
+            pooling_function=tf.layers.max_pooling2d,  # max_pooling2d or average_pooling2d
+            pool_size=(2, 2),  # pooling的size
+            pool_strides=(2, 2),  # pooling的strides
         ):
             layer_name = 'Conv_and_Pool_Layer%s' % n_layer
             with tf.variable_scope(layer_name):
                 conv_name = 'Conv%s' % n_layer
                 pool_name = 'Pool%s' % n_layer
                 conv = tf.layers.conv2d(inputs=inputs, filters=filters, kernel_size=kernel_size, padding=padding, strides=conv_strides,
-                                        activation=activation_function, bias_initializer=bias_initializer, name=conv_name)
+                                        activation=activation_function, bias_initializer=self.b_initializer, name=conv_name)
                 pool = pooling_function(inputs=conv, pool_size=pool_size, strides=pool_strides, name=pool_name)
             return pool
 
-        def build_layers(inputs, neurons_per_layer, c_names):
-            neurons_per_layer = neurons_per_layer.ravel()  # 平坦化数组
-            layer_numbers = neurons_per_layer.shape[0]  # 隐藏层层数
-            neurons_range = range(0, layer_numbers)
-            for n_neurons in neurons_range:  # 构造隐藏层
-                filters = neurons_per_layer[n_neurons]
-                # inputs = add_layer(inputs, in_size, out_size, n_neurons + 1, c_names, self.activation_function)
-                inputs = add_conv_and_pool_layer(inputs=inputs, n_layer=n_neurons + 1, c_names=c_names, filters=filters)
-            print('\ninputs.shape', inputs.shape[1])
+        def build_layers(inputs, filters_per_layer):
+            filters_per_layer = filters_per_layer.ravel()  # 平坦化数组
+            layer_numbers = filters_per_layer.shape[0]
+            l_range = range(0, layer_numbers)
+            for l in l_range:  # 构造卷积和池化层
+                filters = filters_per_layer[l]
+                inputs = add_conv_and_pool_layer(inputs=inputs, n_layer=l + 1, activation_function=self.activation_function,
+                                                 filters=filters, kernel_size=self.kernel_size, conv_strides=self.conv_strides,
+                                                 padding=self.padding, pooling_function=self.pooling_function,
+                                                 pool_size=self.pool_size, pool_strides=self.pool_strides)
+
+            # 构造全连接层
             flat_size = inputs.shape[1] * inputs.shape[2] * inputs.shape[3]
             inputs_flat = tf.reshape(inputs, [-1, int(flat_size)])
             dense = tf.layers.dense(inputs=inputs_flat, units=24, activation=tf.nn.relu)
 
-            # Add dropout operation; 0.6 probability that element will be kept
+            # 添加 dropout 处理过拟合
             dropout = tf.layers.dropout(inputs=dense, rate=0.4)
             out_size = self.n_actions
+            # 输出层
             out = tf.layers.dense(inputs=dropout, units=out_size)
             return out
 
         # ------------------ 创建 eval 神经网络, 及时提升参数 ------------------
-        self.s = tf.placeholder(tf.float32, [None, self.n_features_width, self.n_features_height, self.n_features_depth], name='s')  # input
+        self.s = tf.placeholder(tf.float32, [None, self.observation_width, self.observation_height, self.observation_depth], name='s')  # input
         self.q_target = tf.placeholder(tf.float32, [None, self.n_actions], name='Q_target')  # for calculating loss
 
         with tf.variable_scope('eval_net'):
-            c_names = 'eval_net_params'
-            self.q_eval = build_layers(self.s, self.neurons_per_layer, c_names)
-            print(tf.get_collection('eval_net_params'))
+            self.q_eval = build_layers(self.s, self.filters_per_layer)
 
         with tf.variable_scope('loss'):
             self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
@@ -114,13 +124,11 @@ class CNN:
             self.train_op = self.Optimizer(self.lr).minimize(self.loss)
 
         # ------------------ 创建 target 神经网络, 提供 target Q ------------------
-        self.s_ = tf.placeholder(tf.float32, [None, self.n_features_width, self.n_features_height, self.n_features_depth], name='s_')
+        self.s_ = tf.placeholder(tf.float32, [None, self.observation_width, self.observation_height, self.observation_depth], name='s_')
         with tf.variable_scope('target_net'):
-            c_names = 'target_net_params'
-            self.q_next = build_layers(self.s_, self.neurons_per_layer, c_names)
+            self.q_next = build_layers(self.s_, self.filters_per_layer)
 
     def train(self, input_s, q_target, learn_step_counter):
-
         # 训练 eval 神经网络
         _, cost = self.sess.run([self.train_op, self.loss], feed_dict={self.s: input_s, self.q_target: q_target})
 
@@ -142,7 +150,7 @@ class CNN:
     def replace_target_params(self):
         # 将 target_net 的参数 替换成 eval_net 的参数
         rr = re.compile('target_net')
-        print(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
+        # print(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
         t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, rr)
         rr = re.compile('eval_net')
         e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, rr)
@@ -151,4 +159,4 @@ class CNN:
 
 
 if __name__ == '__main__':
-    Brain = CNN(n_actions=2, n_features_width=210, n_features_height=160, n_features_depth=3, output_graph=True)
+    Brain = CNN(n_actions=2, observation_width=210, observation_height=160, observation_depth=3, output_graph=True)
