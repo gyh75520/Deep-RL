@@ -12,7 +12,12 @@ print(env.observation_space)    # 查看这个环境中可用的 state 的 obser
 # print(env.observation_space.low)    # 查看 observation 最低取值
 
 
-Brain = brain(n_actions=env.action_space.n, n_features_width=210, n_features_height=160, n_features_depth=3, neurons_per_layer=np.array([32, 64]), output_graph=True)
+Brain = brain(n_actions=env.action_space.n,
+              observation_width=env.observation_space.shape[0],
+              observation_height=env.observation_space.shape[1],
+              observation_depth=env.observation_space.shape[2],
+              filters_per_layer=np.array([4, 8]),
+              output_graph=True)
 RL = Agent(
     brain=Brain,
     n_actions=env.action_space.n,
