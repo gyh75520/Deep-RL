@@ -31,6 +31,7 @@ for i_episode in range(10):
 
     observation = env.reset()
     ep_r = 0
+    totalR = 0
     while True:
         env.render()
 
@@ -38,23 +39,18 @@ for i_episode in range(10):
 
         observation_, reward, done, info = env.step(action)
 
-        position, velocity = observation_
-
-        # the higher the better
-        # reward = abs(position - (-0.5))     # r in [0, 1]
+        totalR += reward
 
         RL.store_memory(observation, action, reward, observation_)
 
         if total_steps > 1000:
             RL.learn()
 
-        ep_r += reward
         if done:
-            get = '| Get' if observation_[0] >= env.unwrapped.goal_position else '| ----'
-            print('Epi: ', i_episode,
-                  get,
-                  '| Ep_r: ', round(ep_r, 4),
-                  '| Epsilon: ', round(RL.epsilon, 2))
+            print('episode: ', i_episode,
+                  'ep_r: ', round(ep_r, 2),
+                  ' epsilon: ', round(RL.epsilon, 2),
+                  'total_reward:', totalR)
             break
 
         observation = observation_

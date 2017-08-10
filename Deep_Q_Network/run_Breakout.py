@@ -48,12 +48,10 @@ for i_episode in range(20):
         totalR += env_reward
         RL.store_memory(observation, action, env_reward, observation_)
 
-        ep_r += env_reward
         if total_steps > 1000:
             RL.learn()
         if done:
             print('episode: ', i_episode,
-                  'ep_r: ', round(ep_r, 2),
                   ' epsilon: ', round(RL.epsilon, 2),
                   'total_reward:', totalR)
             break
