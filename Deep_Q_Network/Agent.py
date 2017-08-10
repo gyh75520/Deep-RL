@@ -80,9 +80,9 @@ class Agent:
         states_ = np.array([(no_state if o[3] is None else o[3]) for o in batch_memory])
         action = np.array([o[1] for o in batch_memory])
         reward = np.array([o[2] for o in batch_memory])
-        # 获取 q_next (target_net 产生了 q) 和 q_eval(eval_net 产生的 q)
-        q_next = self.brain.predict_eval_action(states_)
-        q_eval = self.brain.predict_target_action(states)
+        # 获取 q_next (target_net 产生的 q) 和 q_eval(eval_net 产生的 q)
+        q_next = self.brain.predict_target_action(states_)
+        q_eval = self.brain.predict_eval_action(states)
 
         # 计算 q_target
         q_target = q_eval.copy()
@@ -90,7 +90,7 @@ class Agent:
         # print('\nq_target:', q_target.shape)
         batch_index = np.arange(batch_size, dtype=np.int32)
         eval_act_index = action.astype(int)
-        # reward = batch_memory[:, self.n_features + 1]
+        # action 必须是 0,1,2... print('eval_act_index:', eval_act_index)
 
         q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
 

@@ -16,7 +16,7 @@ Brain = brain(n_actions=env.action_space.n, n_features=env.observation_space.sha
 RL = Agent(
     brain=Brain,
     n_actions=env.action_space.n,
-    n_features=env.observation_space.shape[0],
+    observation_space=env.observation_space,
     reward_decay=0.9,
     replace_target_iter=300,
     memory_size=3000,

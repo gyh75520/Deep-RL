@@ -11,7 +11,8 @@ print(env.observation_space.shape)    # 查看这个环境中可用的 state 的
 print(env.observation_space.high)   # 查看 observation 最高取值
 print(env.observation_space.low)    # 查看 observation 最低取值
 
-Brain = brain(n_actions=env.action_space.n, n_features=env.observation_space.shape[0], neurons_per_layer=np.array([64]), output_graph=True)
+# learning_rate 重要
+Brain = brain(n_actions=env.action_space.n, n_features=env.observation_space.shape[0], neurons_per_layer=np.array([64]), learning_rate=0.00025, output_graph=True)
 RL = Agent(
     brain=Brain,
     n_actions=env.action_space.n,
@@ -53,6 +54,7 @@ for i_episode in range(200):
             print('episode: ', i_episode,
                   'ep_r: ', round(ep_r, 2),
                   ' epsilon: ', round(RL.epsilon, 2),
+                  'observation_', observation_,
                   'total_reward:', totalR)
             break
 
