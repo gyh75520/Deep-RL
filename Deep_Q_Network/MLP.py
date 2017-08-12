@@ -88,13 +88,12 @@ class Neural_Networks:
             return out
 
         # ------------------ 创建 eval 神经网络, 及时提升参数 ------------------
-        self.s = tf.placeholder(tf.float32, [None, self.n_features], name='s')  # input
+        self.s = tf.placeholder(tf.float32, [None, self.n_features], name='s')
         self.q_target = tf.placeholder(tf.float32, [None, self.n_actions], name='Q_target')  # for calculating loss
 
         with tf.variable_scope('eval_net'):
             c_names = ['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
             self.q_eval = build_layers(self.s, self.neurons_per_layer, c_names)
-            print(tf.get_collection('eval_net_params'))
 
         with tf.variable_scope('loss'):
             self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
