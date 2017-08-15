@@ -16,9 +16,8 @@ class Brain:
         n_actions,  # 动作数，也就是输出层的神经元数
         n_features,  # 特征数，也就是输入的矩阵的列数
         neurons_per_layer=np.array([10]),  # 隐藏层每层神经元数
-        eval_activation_function=tf.nn.relu,  # 激活函数
-        ap_activation_function=tf.nn.softmax,  # 激活函数
-        Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.RMSPropOptimizer..
+        activation_function=tf.nn.relu,  # 激活函数
+        Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.GradientDescentOptimizer..
         learning_rate=0.01,  # 学习速率
         w_initializer=tf.random_normal_initializer(0., 0.3),
         b_initializer=tf.constant_initializer(0.1),
@@ -27,8 +26,7 @@ class Brain:
         self.n_actions = n_actions
         self.n_features = n_features
         self.neurons_per_layer = neurons_per_layer
-        self.eval_activation_function = eval_activation_function
-        self.ap_activation_function = ap_activation_function
+        self.activation_function = activation_function
         self.lr = learning_rate
         self.Optimizer = Optimizer
         self.w_initializer = w_initializer
@@ -81,7 +79,7 @@ class Brain:
             in_size = self.n_features
             for n_neurons in neurons_range:  # 构造隐藏层
                 out_size = neurons_per_layer[n_neurons]
-                inputs = add_layer(inputs, in_size, out_size, n_neurons + 1, c_names, self.eval_activation_function)
+                inputs = add_layer(inputs, in_size, out_size, n_neurons + 1, c_names, self.activation_function)
                 in_size = out_size
 
             out_size = self.n_actions
@@ -95,22 +93,23 @@ class Brain:
             in_size = self.n_features
             for n_neurons in neurons_range:  # 构造隐藏层
                 out_size = neurons_per_layer[n_neurons]
-                inputs = add_layer(inputs, in_size, out_size, n_neurons + 1, c_names, self.ap_activation_function)
+                inputs = add_layer(inputs, in_size, out_size, n_neurons + 1, c_names, self.activation_function)
                 in_size = out_size
 
             out_size = self.n_actions
-            out = add_layer(inputs, in_size, out_size, layer_numbers + 1, c_names, None)  # 构造输出层
+            out = add_layer(inputs, in_size, out_size, layer_numbers + 1, c_names, tf.nn.softmax)  # 构造输出层 使用softmax
             return out
 
         # ------------------ 创建 average_policy 神经网络 ------------------
         self.ap_s = tf.placeholder(tf.float32, [None, self.n_features], name='average_policy_s')
+        self.action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')
         # self.policy_target = tf.placeholder(tf.float32, [None, self.n_actions], name='AP_target')
         with tf.variable_scope('average_policy_net'):
             c_names = ['average_policy_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
             self.policy = build_average_policy_layers(self.ap_s, self.neurons_per_layer, c_names)
 
         with tf.variable_scope('ap_net_loss'):
-            self.ap_net_loss = tf.reduce_mean(tf.log(self.policy))
+            self.ap_net_loss = tf.reduce_mean(-tf.reduce_sum(self.n_actions * tf.log(self.policy), axis=1))  # 交叉熵
             if self.output_graph:
                 tf.summary.scalar('ap_net_loss', self.ap_net_loss)
 
@@ -139,18 +138,20 @@ class Brain:
             c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
             self.q_next = build_eval_layers(self.target_s, self.neurons_per_layer, c_names)
 
-    def train_ap_net(self, input_s, ap_target, learn_step_counter):
-        return 0
+    def train_ap_net(self, input_s, action, learn_step_counter):
+        _, cost = self.sess.run([self.ap_net_train_op, self.ap_net_loss], feed_dict={self.ap_s: input_s, self.action: action})
 
     def train_eval_net(self, input_s, q_target, learn_step_counter):
         # 训练 eval 神经网络
         _, cost = self.sess.run([self.eval_net_train_op, self.eval_net_loss], feed_dict={self.eval_s: input_s, self.q_target: q_target})
 
+        '''
         if self.output_graph:
             # 每隔100步记录一次
             if learn_step_counter % 100 == 0:
                 rs = self.sess.run(self.merged, feed_dict={self.eval_s: input_s, self.q_target: q_target, self.target_s: input_s})
                 self.writer.add_summary(rs, learn_step_counter)
+        '''
         return cost
 
     def predict_eval_action(self, input_s):
