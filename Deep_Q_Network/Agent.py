@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 """
 by Howard
 using:
@@ -52,7 +53,7 @@ class Agent:
             self.memory.pop(0)
 
     def choose_action(self, observation):
-        # 统一shape (1, size_of_observation)
+        # 增加一个维度[observation]
         observation = observation[np.newaxis, :]
         # epsilon greedy 探索
         if np.random.uniform() < self.epsilon:

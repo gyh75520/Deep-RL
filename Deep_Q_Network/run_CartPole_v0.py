@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 import gym
 from MLP import Neural_Networks as brain
 from Agent import Agent

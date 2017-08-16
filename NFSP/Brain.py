@@ -162,6 +162,10 @@ class Brain:
         actions_value = self.sess.run(self.q_next, feed_dict={self.target_s: input_s})
         return actions_value
 
+    def predict_ap_action_probability(self, input_s):
+        actions_probability = self.sess.run(self.policy, feed_dict={self.ap_s: input_s})
+        return actions_probability
+
     def replace_target_params(self):
         # 将 target_net 的参数 替换成 eval_net 的参数
         t_params = tf.get_collection('target_net_params')
