@@ -16,7 +16,7 @@ class Agent:
     def __init__(
         self,
         brain,  # 使用的神经网络
-        observation_space,
+        observation_space_shape,
         n_actions,  # 动作数
         reward_decay=0.9,  # gamma参数
         MAX_EPSILON=0.9,  # epsilon 的最大值
@@ -27,7 +27,7 @@ class Agent:
         replace_target_iter=300,  # 更换 target_net 的步数
     ):
         self.brain = brain
-        self.observation_space = observation_space
+        self.observation_space_shape = observation_space_shape
         self.n_actions = n_actions
         self.gamma = reward_decay
         self.MAX_EPSILON = MAX_EPSILON
@@ -76,7 +76,7 @@ class Agent:
 
         batch_memory = random.sample(self.memory, batch_size)
 
-        no_state = np.zeros(self.observation_space.shape)
+        no_state = np.zeros(self.observation_space_shape)
         states = np.array([o[0] for o in batch_memory])
         states_ = np.array([(no_state if o[3] is None else o[3]) for o in batch_memory])
         action = np.array([o[1] for o in batch_memory])
@@ -96,8 +96,8 @@ class Agent:
         q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
 
         # 训练 eval 神经网络
-        self.cost = self.brain.train(states, q_target, self.learn_step_counter)
-        self.cost_his.append(self.cost)
+        cost = self.brain.train(states, q_target, self.learn_step_counter)
+        self.cost_his.append(cost)
 
         # 逐渐减少 epsilon, 降低行为的随机性
         self.learn_step_counter += 1
