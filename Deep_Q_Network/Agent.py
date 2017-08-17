@@ -9,7 +9,6 @@ using:
 
 import numpy as np
 import random
-# from RL_Brain import Neural_Networks as brain
 
 
 class Agent:

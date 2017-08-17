@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
 information_state 的选择是个问题
+这只是一个简单的测试
 
 by Howard
 using:

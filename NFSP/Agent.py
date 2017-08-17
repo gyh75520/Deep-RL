@@ -9,14 +9,13 @@ using:
 
 import numpy as np
 import random
-from Brain import Brain
 
 
 class Agent:
     def __init__(
         self,
         brain,  # 使用的神经网络
-        information_state_shape,
+        information_state_shape,  # 信息状态的 shape
         n_actions,  # 动作数
         reward_decay=0.9,  # gamma参数
         MAX_EPSILON=0.9,  # epsilon 的最大值
@@ -25,7 +24,7 @@ class Agent:
         RL_memory_size=500,  # RL记忆的大小
         SL_memory_size=500,  # SL记忆的大小
         RL_batch_size=32,  # 每次更新时从 RL_memory 里面取多少记忆出来
-        SL_batch_size=32,  # 每次更新时从 RL_memory 里面取多少记忆出来
+        SL_batch_size=32,  # 每次更新时从 SL_memory 里面取多少记忆出来
         replace_target_iter=300,  # 更换 target_net 的步数
         eta=0.1,  # anticipatory parameter
     ):
@@ -42,7 +41,7 @@ class Agent:
         self.SL_memory_size = SL_memory_size
         self.RL_batch_size = RL_batch_size
         self.SL_batch_size = SL_batch_size
-        self.policy_sigma = 0
+        self.policy_sigma = 0  # 策略sigma
         self.eta = eta
 
         self.ap_net_cost = []
@@ -53,9 +52,11 @@ class Agent:
 
         # 初始化全 0 记忆 [s, a, r, s_]
         self.RL_memory = []
+        # 初始化全 0 记忆 [s, a]
         self.SL_memory = []
 
     def set_policy_sigma(self):
+        # 设置 策略sigma
         if np.random.uniform() < self.eta:
             self.policy_sigma = 1
         else:
@@ -63,8 +64,7 @@ class Agent:
         print('\npolicy_sigma', self.policy_sigma)
 
     def choose_action(self, observation):
-        # 增加一个维度[observation]
-        observation = observation[np.newaxis, :]
+        observation = observation[np.newaxis, :]  # 增加一个维度[observation]
         if self.policy_sigma == 0:
             print('Please set_policy_sigma before choose_action')
             exit()
@@ -166,6 +166,7 @@ class Agent:
 
 
 if __name__ == '__main__':
+    from Brain import Brain
     Brain = Brain(n_actions=1, n_features=4, output_graph=True)
     agent = Agent(Brain, n_actions=2, information_state_shape=4)
     agent.plot_cost()

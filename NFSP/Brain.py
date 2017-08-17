@@ -15,8 +15,8 @@ class Brain:
         self,
         n_actions,  # 动作数，也就是输出层的神经元数
         n_features,  # 特征数，也就是输入的矩阵的列数
-        eval_neurons_per_layer=np.array([10]),  # 隐藏层每层神经元数
-        ap_neurons_per_layer=np.array([10, 10]),  # 隐藏层每层神经元数
+        eval_neurons_per_layer=np.array([10]),  # eval_net 隐藏层每层神经元数
+        ap_neurons_per_layer=np.array([10, 10]),  # ap_net 隐藏层每层神经元数
         activation_function=tf.nn.relu,  # 激活函数
         Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.GradientDescentOptimizer..
         learning_rate=0.01,  # 学习速率
@@ -102,10 +102,10 @@ class Brain:
             out = add_layer(inputs, in_size, out_size, layer_numbers + 1, c_names, tf.nn.softmax)  # 构造输出层 使用softmax
             return out
 
-        # ------------------ 创建 average_policy 神经网络 ------------------
+        # ------------------ 创建 average_policy 神经网络, 预测 action 概率 ------------------
         self.ap_s = tf.placeholder(tf.float32, [None, self.n_features], name='average_policy_s')
         self.action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')
-        # self.policy_target = tf.placeholder(tf.float32, [None, self.n_actions], name='AP_target')
+
         with tf.variable_scope('average_policy_net'):
             c_names = ['average_policy_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
             self.policy = build_average_policy_layers(self.ap_s, self.ap_neurons_per_layer, c_names)
@@ -141,8 +141,8 @@ class Brain:
             self.q_next = build_eval_layers(self.target_s, self.eval_neurons_per_layer, c_names)
 
     def train_ap_net(self, input_s, action, learn_step_counter):
+        # 训练 average_policy 神经网络
         _, cost = self.sess.run([self.ap_net_train_op, self.ap_net_loss], feed_dict={self.ap_s: input_s, self.action: action})
-
         return cost
 
     def train_eval_net(self, input_s, q_target, learn_step_counter):
