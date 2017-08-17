@@ -1,4 +1,13 @@
 # -*- coding: UTF-8 -*-
+"""
+information_state 的选择是个问题
+
+by Howard
+using:
+- python: 3.6
+- Tensorflow: 1.2.1
+- gym: 0.9.2
+"""
 from Brain import Brain as brain
 from Agent import Agent
 import numpy as np
