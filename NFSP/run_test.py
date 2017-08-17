@@ -8,7 +8,7 @@ Brain = brain(n_actions=3, n_features=4, learning_rate=0.00025, output_graph=Tru
 RL = Agent(
     brain=Brain,
     n_actions=3,
-    observation_space_shape=(4,),
+    information_state_shape=(4,),
     reward_decay=0.9,
     replace_target_iter=100,
 )

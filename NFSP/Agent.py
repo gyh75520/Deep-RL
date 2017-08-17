@@ -16,7 +16,7 @@ class Agent:
     def __init__(
         self,
         brain,  # 使用的神经网络
-        observation_space_shape,
+        information_state_shape,
         n_actions,  # 动作数
         reward_decay=0.9,  # gamma参数
         MAX_EPSILON=0.9,  # epsilon 的最大值
@@ -30,7 +30,7 @@ class Agent:
         eta=0.1,  # anticipatory parameter
     ):
         self.brain = brain
-        self.observation_space_shape = observation_space_shape
+        self.information_state_shape = information_state_shape
         self.n_actions = n_actions
         self.gamma = reward_decay
         self.MAX_EPSILON = MAX_EPSILON
@@ -126,7 +126,7 @@ class Agent:
         RL_batch_size = min(self.RL_batch_size, len(self.RL_memory))
         RL_batch_memory = random.sample(self.RL_memory, RL_batch_size)
 
-        no_state = np.zeros(self.observation_space_shape)
+        no_state = np.zeros(self.information_state_shape)
         states = np.array([o[0] for o in RL_batch_memory])
         states_ = np.array([(no_state if o[3] is None else o[3]) for o in RL_batch_memory])
         action = np.array([o[1] for o in RL_batch_memory])
@@ -167,5 +167,5 @@ class Agent:
 
 if __name__ == '__main__':
     Brain = Brain(n_actions=1, n_features=4, output_graph=True)
-    agent = Agent(Brain, n_actions=2, observation_space_shape=4)
+    agent = Agent(Brain, n_actions=2, information_state_shape=4)
     agent.plot_cost()
