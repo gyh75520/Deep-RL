@@ -29,7 +29,8 @@ class CNN:
         pool_strides=(2, 2),  # pooling的strides
         Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.RMSPropOptimizer..
         learning_rate=0.01,  # 学习速率
-        output_graph=False,  # 使用tensorboard
+        output_graph=False,  # 使用 tensorboard
+        restore=False,  # 是否使用存储的神经网络
     ):
         self.n_actions = n_actions
         self.observation_width = observation_width
@@ -49,6 +50,7 @@ class CNN:
         self.b_initializer = b_initializer
         self.output_graph = output_graph
         self._build_net()
+        self.checkpoint_dir = 'My_CNN_Net'  # 存储的dir name
 
         self.sess = tf.Session()
 
@@ -60,7 +62,10 @@ class CNN:
             # terminal 输入 tensorboard --logdir graph
             self.writer = tf.summary.FileWriter("graph/", self.sess.graph)
 
-        self.sess.run(tf.global_variables_initializer())
+        if restore:
+            self.restore()
+        else:
+            self.sess.run(tf.global_variables_initializer())
         # self.cost_his = []
 
     def _build_net(self):
@@ -156,6 +161,22 @@ class CNN:
         e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, rr)
         for t, e in zip(t_params, e_params):
             self.sess.run(tf.assign(t, e))
+
+    def save(self):
+        # 存储神经网络
+        saver = tf.train.Saver()
+        save_path = saver.save(self.sess, self.checkpoint_dir + "/save_net.ckpt")
+        print("\nSave to path: ", save_path)
+
+    def restore(self):
+        # 使用存储的神经网络
+        saver = tf.train.Saver()
+        ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
+        if ckpt and ckpt.model_checkpoint_path:
+            saver.restore(self.sess, ckpt.model_checkpoint_path)  # ckpt.model_checkpoint_path表示模型存储的位置
+            print('\nRestore Sucess')
+        else:
+            raise Exception("Check model_checkpoint_path Exist?")
 
 
 if __name__ == '__main__':

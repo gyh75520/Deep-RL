@@ -35,6 +35,7 @@ for i_episode in range(200):
         # env.render()
 
         action = RL.choose_action(observation)
+        print('\nobser', observation)
         print('choose_action', action)
         # observation_, reward, done, info = env.step(action)
         observation_, reward, done = np.array([2, 3, 5, 6]), 1, False

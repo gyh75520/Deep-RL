@@ -13,7 +13,15 @@ print(env.observation_space.high)   # 查看 observation 最高取值
 print(env.observation_space.low)    # 查看 observation 最低取值
 
 # learning_rate 重要
-Brain = brain(n_actions=env.action_space.n, n_features=env.observation_space.shape[0], neurons_per_layer=np.array([64]), learning_rate=0.00025, output_graph=True)
+# restore 和 MAX_EPSILON 一起调整
+Brain = brain(
+    n_actions=env.action_space.n,
+    n_features=env.observation_space.shape[0],
+    neurons_per_layer=np.array([64]),
+    learning_rate=0.00025,
+    output_graph=True,
+    restore=True,
+)
 RL = Agent(
     brain=Brain,
     n_actions=env.action_space.n,
@@ -21,12 +29,13 @@ RL = Agent(
     reward_decay=0.9,
     replace_target_iter=100,
     memory_size=2000,
+    MAX_EPSILON=0.01,
 )
 
 total_steps = 0
 
 
-for i_episode in range(200):
+for i_episode in range(140):
 
     observation = env.reset()
     ep_r = 0
@@ -60,4 +69,6 @@ for i_episode in range(200):
 
         observation = observation_
         total_steps += 1
+    if i_episode == 139:
+        Brain.save()  # 存储神经网络
 RL.plot_cost()
