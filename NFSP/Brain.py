@@ -15,26 +15,31 @@ class Brain:
         self,
         n_actions,  # 动作数，也就是输出层的神经元数
         n_features,  # 特征数，也就是输入的矩阵的列数
-        eval_neurons_per_layer=np.array([10]),  # eval_net 隐藏层每层神经元数
-        ap_neurons_per_layer=np.array([10, 10]),  # ap_net 隐藏层每层神经元数
+        eval_neurons_per_layer=np.array([1024, 512, 1024, 512]),  # eval_net 隐藏层每层神经元数
+        ap_neurons_per_layer=np.array([1024, 512, 1024, 512]),  # ap_net 隐藏层每层神经元数
         activation_function=tf.nn.relu,  # 激活函数
         Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.GradientDescentOptimizer..
-        learning_rate=0.01,  # 学习速率
+        RL_learning_rate=0.1,  # 学习速率
+        ML_learning_rate=0.01,  # 学习速率
         w_initializer=tf.random_normal_initializer(0., 0.3),
         b_initializer=tf.constant_initializer(0.1),
-        output_graph=False,  # 使用tensorboard
+        output_graph=False,  # 使用 tensorboard
+        restore=False,  # 是否使用存储的神经网络
+        checkpoint_dir='My_NFSP_Net',  # 存储的dir name
     ):
         self.n_actions = n_actions
         self.n_features = n_features
         self.eval_neurons_per_layer = eval_neurons_per_layer
         self.ap_neurons_per_layer = ap_neurons_per_layer
         self.activation_function = activation_function
-        self.lr = learning_rate
+        self.RL_lr = RL_learning_rate
+        self.ML_lr = ML_learning_rate
         self.Optimizer = Optimizer
         self.w_initializer = w_initializer
         self.b_initializer = b_initializer
         self.output_graph = output_graph
         self._build_net()
+        self.checkpoint_dir = checkpoint_dir
 
         self.sess = tf.Session()
 
@@ -46,7 +51,10 @@ class Brain:
             # terminal 输入 tensorboard --logdir graph
             self.writer = tf.summary.FileWriter("graph/", self.sess.graph)
 
-        self.sess.run(tf.global_variables_initializer())
+        if restore:
+            self.restore()
+        else:
+            self.sess.run(tf.global_variables_initializer())
 
     def _build_net(self):
         def add_layer(
@@ -116,7 +124,7 @@ class Brain:
                 tf.summary.scalar('ap_net_loss', self.ap_net_loss)
 
         with tf.variable_scope('ap_net_train'):
-            self.ap_net_train_op = self.Optimizer(self.lr).minimize(self.ap_net_loss)
+            self.ap_net_train_op = self.Optimizer(self.ML_lr).minimize(self.ap_net_loss)
 
         # ------------------ 创建 eval 神经网络, 及时提升参数 ------------------
         self.eval_s = tf.placeholder(tf.float32, [None, self.n_features], name='eval_s')
@@ -132,7 +140,7 @@ class Brain:
                 tf.summary.scalar('eval_net_loss', self.eval_net_loss)
 
         with tf.variable_scope('eval_net_train'):
-            self.eval_net_train_op = self.Optimizer(self.lr).minimize(self.eval_net_loss)
+            self.eval_net_train_op = self.Optimizer(self.RL_lr).minimize(self.eval_net_loss)
 
         # ------------------ 创建 target 神经网络, 提供 target Q ------------------
         self.target_s = tf.placeholder(tf.float32, [None, self.n_features], name='target_s')
@@ -176,6 +184,22 @@ class Brain:
         e_params = tf.get_collection('eval_net_params')
         for t, e in zip(t_params, e_params):
             self.sess.run(tf.assign(t, e))
+
+    def save(self):
+        # 存储神经网络
+        saver = tf.train.Saver()
+        save_path = saver.save(self.sess, self.checkpoint_dir + "/save_net.ckpt")
+        print("\nSave to path: ", save_path)
+
+    def restore(self):
+        # 使用存储的神经网络
+        saver = tf.train.Saver()
+        ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
+        if ckpt and ckpt.model_checkpoint_path:
+            saver.restore(self.sess, ckpt.model_checkpoint_path)  # ckpt.model_checkpoint_path表示模型存储的位置
+            print('\nRestore Sucess')
+        else:
+            raise Exception("Check model_checkpoint_path Exist?")
 
 
 if __name__ == '__main__':

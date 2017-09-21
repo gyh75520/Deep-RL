@@ -18,14 +18,14 @@ class Agent:
         information_state_shape,  # 信息状态的 shape
         n_actions,  # 动作数
         reward_decay=0.9,  # gamma参数
-        MAX_EPSILON=0.9,  # epsilon 的最大值
-        MIN_EPSILON=0.01,  # epsilon 的最小值
+        MAX_EPSILON=0.08,  # epsilon 的最大值
+        MIN_EPSILON=0.00,  # epsilon 的最小值
         LAMBDA=0.001,  # speed of decay
-        RL_memory_size=500,  # RL记忆的大小
-        SL_memory_size=500,  # SL记忆的大小
-        RL_batch_size=32,  # 每次更新时从 RL_memory 里面取多少记忆出来
-        SL_batch_size=32,  # 每次更新时从 SL_memory 里面取多少记忆出来
-        replace_target_iter=300,  # 更换 target_net 的步数
+        RL_memory_size=600,  # RL记忆的大小 600k
+        SL_memory_size=30000,  # SL记忆的大小 20m
+        RL_batch_size=256,  # 每次更新时从 RL_memory 里面取多少记忆出来
+        SL_batch_size=256,  # 每次更新时从 SL_memory 里面取多少记忆出来
+        replace_target_iter=1000,  # 更换 target_net 的步数 1000
         eta=0.1,  # anticipatory parameter
     ):
         self.brain = brain
@@ -66,8 +66,7 @@ class Agent:
     def choose_action(self, observation):
         observation = observation[np.newaxis, :]  # 增加一个维度[observation]
         if self.policy_sigma == 0:
-            print('Please set_policy_sigma before choose_action')
-            exit()
+            raise Exception('Please set_policy_sigma before choose_action')
         elif self.policy_sigma == 1:
             # epsilon greedy 探索
             if np.random.uniform() < self.epsilon:
