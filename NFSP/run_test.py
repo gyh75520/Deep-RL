@@ -14,7 +14,7 @@ from Agent import Agent
 import numpy as np
 
 
-Brain = brain(n_actions=3, n_features=4, learning_rate=0.00025, output_graph=True)
+Brain = brain(n_actions=3, n_features=4)
 RL = Agent(
     brain=Brain,
     n_actions=3,

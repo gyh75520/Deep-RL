@@ -74,10 +74,11 @@ class Agent:
             else:
                 # 选择 q 值最大的 action
                 actions_value = self.brain.predict_eval_action(observation)
+                print('\naction', actions_value)
                 action = np.argmax(actions_value)
         elif self.policy_sigma == 2:
             actions_probability = self.brain.predict_ap_action_probability(observation)
-            # print('actions_probability', actions_probability)
+            print('actions_probability', actions_probability)
             random_num = np.random.uniform()
             action = 0
             for a in actions_probability[0]:
