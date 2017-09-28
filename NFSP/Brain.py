@@ -119,7 +119,8 @@ class Brain:
             self.policy = build_average_policy_layers(self.ap_s, self.ap_neurons_per_layer, c_names)
 
         with tf.variable_scope('ap_net_loss'):
-            self.ap_net_loss = tf.reduce_mean(-tf.reduce_sum(self.action * tf.log(self.policy), axis=1))  # 交叉熵
+            # tf.clip_by_value函数是为了限制输出的大小，为了避免log0为负无穷的情况，将输出的值限定在(1e-10, 1.0)之间
+            self.ap_net_loss = tf.reduce_mean(-tf.reduce_sum(self.action * tf.log(tf.clip_by_value(self.policy, 1e-10, 1.0)), axis=1))  # 交叉熵
             if self.output_graph:
                 tf.summary.scalar('ap_net_loss', self.ap_net_loss)
 
