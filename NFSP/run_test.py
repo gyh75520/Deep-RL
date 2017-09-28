@@ -14,19 +14,20 @@ from Agent import Agent
 import numpy as np
 
 
-Brain = brain(n_actions=3, n_features=4)
+Brain = brain(n_actions=3, n_features=4, output_graph=True)
 RL = Agent(
     brain=Brain,
     n_actions=3,
     information_state_shape=(4,),
     reward_decay=0.9,
     replace_target_iter=100,
+
 )
 
 total_steps = 0
 
 
-for i_episode in range(200):
+for i_episode in range(20):
 
     observation = np.array([1, 2, 3, 4])
     totalR = 0

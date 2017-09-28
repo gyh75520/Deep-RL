@@ -20,7 +20,7 @@ Brain = brain(
     neurons_per_layer=np.array([64]),
     learning_rate=0.00025,
     output_graph=True,
-    restore=True,
+    restore=False,
 )
 RL = Agent(
     brain=Brain,

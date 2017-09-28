@@ -22,7 +22,7 @@ class Agent:
         MIN_EPSILON=0.00,  # epsilon 的最小值
         LAMBDA=0.001,  # speed of decay
         RL_memory_size=600,  # RL记忆的大小 600k
-        SL_memory_size=30000,  # SL记忆的大小 20m
+        SL_memory_size=20000,  # SL记忆的大小 20m
         RL_batch_size=256,  # 每次更新时从 RL_memory 里面取多少记忆出来
         SL_batch_size=256,  # 每次更新时从 SL_memory 里面取多少记忆出来
         replace_target_iter=1000,  # 更换 target_net 的步数 1000
@@ -107,46 +107,48 @@ class Agent:
             print('\nlearn_step_counter=', self.learn_step_counter, ' target_params_replaced')
             print('epsilon:', self.epsilon, '\n')
 
-        # ------------------ 训练 average_policy 神经网络 ------------------
-        # 从 memory 中随机抽取 RL_batch_size 大小的记忆
-        SL_batch_size = min(self.SL_batch_size, len(self.SL_memory))
-        if SL_batch_size > 0:
-            SL_batch_memory = random.sample(self.SL_memory, SL_batch_size)
-            states = np.array([o[0] for o in SL_batch_memory])
-            action = np.array([o[1] for o in SL_batch_memory])
-
-            # One Hot Encoding
-            one_hot_action = np.eye(self.n_actions)[action]
-
-            cost_ap = self.brain.train_ap_net(states, one_hot_action, self.learn_step_counter)
-            self.ap_net_cost.append(cost_ap)
-
         # ------------------ 训练 eval 神经网络 ------------------
         # 从 memory 中随机抽取 RL_batch_size 大小的记忆
         RL_batch_size = min(self.RL_batch_size, len(self.RL_memory))
         RL_batch_memory = random.sample(self.RL_memory, RL_batch_size)
 
         no_state = np.zeros(self.information_state_shape)
-        states = np.array([o[0] for o in RL_batch_memory])
-        states_ = np.array([(no_state if o[3] is None else o[3]) for o in RL_batch_memory])
-        action = np.array([o[1] for o in RL_batch_memory])
+        eval_states = np.array([o[0] for o in RL_batch_memory])
+        eval_states_ = np.array([(no_state if o[3] is None else o[3]) for o in RL_batch_memory])
+        eval_action = np.array([o[1] for o in RL_batch_memory])
         reward = np.array([o[2] for o in RL_batch_memory])
         # 获取 q_next (target_net 产生的 q) 和 q_eval(eval_net 产生的 q)
-        q_next = self.brain.predict_target_action(states_)
-        q_eval = self.brain.predict_eval_action(states)
+        q_next = self.brain.predict_target_action(eval_states_)
+        q_eval = self.brain.predict_eval_action(eval_states)
 
         # 计算 q_target
         q_target = q_eval.copy()
         # print('\nstates:', states.shape)
         # print('\nq_target:', q_target.shape)
         batch_index = np.arange(RL_batch_size, dtype=np.int32)
-        eval_act_index = action.astype(int)
-        # action 必须是 0,1,2... print('eval_act_index:', eval_act_index)
+        eval_act_index = eval_action.astype(int)
+        # eval_action 必须是 0,1,2... print('eval_act_index:', eval_act_index)
 
         q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
 
-        cost_eval = self.brain.train_eval_net(states, q_target, self.learn_step_counter)
+        cost_eval = self.brain.train_eval_net(eval_states, q_target, self.learn_step_counter)
         self.eval_net_cost.append(cost_eval)
+
+        # ------------------ 训练 average_policy 神经网络 ------------------
+        # 从 memory 中随机抽取 RL_batch_size 大小的记忆
+        SL_batch_size = min(self.SL_batch_size, len(self.SL_memory))
+        if SL_batch_size > 0:
+            SL_batch_memory = random.sample(self.SL_memory, SL_batch_size)
+            ap_states = np.array([o[0] for o in SL_batch_memory])
+            ap_action = np.array([o[1] for o in SL_batch_memory])
+
+            # One Hot Encoding
+            one_hot_action = np.eye(self.n_actions)[ap_action]
+
+            cost_ap = self.brain.train_ap_net(ap_states, one_hot_action, self.learn_step_counter)
+            self.ap_net_cost.append(cost_ap)
+            # brain 中 的 output_graph 需要为 True
+            self.brain.output_tensorboard(ap_states, one_hot_action, eval_states, q_target, eval_states_, self.learn_step_counter)
 
         # 逐渐减少 epsilon, 降低行为的随机性
         self.learn_step_counter += 1

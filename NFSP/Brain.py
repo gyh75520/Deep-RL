@@ -157,15 +157,14 @@ class Brain:
     def train_eval_net(self, input_s, q_target, learn_step_counter):
         # 训练 eval 神经网络
         _, cost = self.sess.run([self.eval_net_train_op, self.eval_net_loss], feed_dict={self.eval_s: input_s, self.q_target: q_target})
+        return cost
 
-        '''
+    def output_tensorboard(self, ap_s, action, eval_s, q_target, target_s, learn_step_counter):
         if self.output_graph:
             # 每隔100步记录一次
             if learn_step_counter % 100 == 0:
-                rs = self.sess.run(self.merged, feed_dict={self.eval_s: input_s, self.q_target: q_target, self.target_s: input_s})
+                rs = self.sess.run(self.merged, feed_dict={self.ap_s: ap_s, self.action: action, self.eval_s: eval_s, self.q_target: q_target, self.target_s: target_s})
                 self.writer.add_summary(rs, learn_step_counter)
-        '''
-        return cost
 
     def predict_eval_action(self, input_s):
         actions_value = self.sess.run(self.q_eval, feed_dict={self.eval_s: input_s})

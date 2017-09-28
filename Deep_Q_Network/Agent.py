@@ -97,6 +97,8 @@ class Agent:
         # 训练 eval 神经网络
         cost = self.brain.train(states, q_target, self.learn_step_counter)
         self.cost_his.append(cost)
+        # brain 中 的 output_graph 需要为 True
+        self.brain.output_tensorboard(states, q_target, states_, self.learn_step_counter)
 
         # 逐渐减少 epsilon, 降低行为的随机性
         self.learn_step_counter += 1
