@@ -6,15 +6,14 @@ from NFSP.Agent import Agent
 from NFSP.Brain import Brain as brain
 import numpy as np
 
-restore_flag = True
+restore_flag = False
 
 # restore 和 MAX_EPSILON 一起调整 多少回合数save
 Brain = brain(
     n_actions=3,
     n_features=248,
     restore=restore_flag,
-    checkpoint_dir='My_NFSP_play1_Net',
-    output_graph=True,
+    checkpoint_dir='My_NFSP_play2_Net',
 )
 RL = Agent(
     brain=Brain,
@@ -27,9 +26,9 @@ RL = Agent(
 def main():
     test = True
     if test:
-        port = 48777
+        port = 16177
         logpath = "/Users/howard/Texas_open_source/project_acpc_server/matchName1.log"
-        playerName = "Bob"
+        playerName = "Alice"
     else:
         port = int(sys.argv[1])
         logpath = sys.argv[2]
@@ -86,10 +85,8 @@ def main():
             obser = obser_
             step += 1
         print('now:', Total_reward, "episode:", episode)
-        if restore_flag is False and episode == 1999:
+        if restore_flag is False and episode == 1899:
             Brain.save()  # 存储神经网络
-
-    RL.plot_cost()
 
 
 if __name__ == '__main__':

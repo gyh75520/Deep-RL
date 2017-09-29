@@ -16,7 +16,7 @@ class Brain:
         n_actions,  # 动作数，也就是输出层的神经元数
         n_features,  # 特征数，也就是输入的矩阵的列数
         eval_neurons_per_layer=np.array([1024, 512, 1024, 512]),  # eval_net 隐藏层每层神经元数
-        ap_neurons_per_layer=np.array([10]),  # ap_net 隐藏层每层神经元数
+        ap_neurons_per_layer=np.array([1024, 512, 1024, 512]),  # ap_net 隐藏层每层神经元数
         activation_function=tf.nn.relu,  # 激活函数
         Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.GradientDescentOptimizer..
         RL_learning_rate=0.1,  # 学习速率

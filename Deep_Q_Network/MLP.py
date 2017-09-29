@@ -14,7 +14,7 @@ class Neural_Networks:
     def __init__(
         self,
         n_actions,  # 动作数，也就是输出层的神经元数
-        n_features,  # 特征数，也就是输入的矩阵的列数
+        n_features,  # 特征数，也就是输入的 vector 大小
         neurons_per_layer=np.array([10]),  # 隐藏层每层神经元数
         activation_function=tf.nn.relu,  # 激活函数
         Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.RMSPropOptimizer..
