@@ -3,7 +3,7 @@
 
 使用 Tensorflow 来实现 DQN, 搭建了两个神经网络, target_net 用于预测 q_target 值, 他不会及时更新参数. eval_net 用于预测 q_eval, 这个神经网络拥有最新的神经网络参数. 不过这两个神经网络结构是完全一样的
 
-![p_2](p_2.png)
+![p_2](img/p_2.png)
 
 我们把 DQN 分成 Agent 和 Brain 两部分，Agent 的初始化参数需要选择 Brain，然后使用 Agent 和 环境交互 ，不停的训练。
 
@@ -148,12 +148,12 @@ Brain.save()
 
 点开 GRAPHS ,可以查看网络结构，里面的每个方框都可以点开查看
 
-![ p_3](p_3.png)
+![ p_3](img/p_3.png)
 
 点开 SCALARS , 可以查看 cost 变化曲线
 
-![p_4](p_4.png)
+![p_4](img/p_4.png)
 
 点开 DISTRIBUTIONS 可以查看 Weights, biases 等的变化图表
 
-![p_5](p_5.png)
+![p_5](img/p_5.png)
