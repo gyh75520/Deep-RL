@@ -3,7 +3,7 @@
 
 使用 Tensorflow 来实现 DQN, 搭建了两个神经网络, target_net 用于预测 q_target 值, 他不会及时更新参数. eval_net 用于预测 q_eval, 这个神经网络拥有最新的神经网络参数. 不过这两个神经网络结构是完全一样的
 
-![p_2](img/p_2.png)
+![p_2](img/p_2.png){:height="50%" width="50%"}
 
 我们把 DQN 分成 Agent 和 Brain 两部分，Agent 的初始化参数需要选择 Brain，然后使用 Agent 和 环境交互 ，不停的训练。
 
@@ -127,6 +127,18 @@ RL = Agent(
 - observation_space_shape 填入 observation ( state ) 的shape 比如 (20,) 注意格式
 - 其他的参照代码中的注释
 
+```python
+observation = env.reset() # 从环境中获取 observation(state)
+
+action = RL.choose_action(observation) # 使用 Agent 选择动作
+
+observation_, env_reward, done, info = env.step(action) # 把动作交互给环境，环境 反馈 reward 和 下一个 observation(state)
+
+RL.store_memory(observation, action, reward, observation_) # 将 (s,a,r,s_) 存储起来
+
+RL.learn() # 训练
+```
+重复上面的过程进行训练
 
 ## 存储和使用神经网络
 ### 存储
