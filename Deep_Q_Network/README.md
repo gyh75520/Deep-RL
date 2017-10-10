@@ -136,7 +136,7 @@ Brain.save()
 ```
 
 ### 使用
-当存储了神经网络之后，在Brain 初始化时，restore 设置为True即可。
+当存储了神经网络之后，在Brain 初始化时，restore 设置为 True 即可。
 
 
 ## 使用 tensorboard
@@ -144,9 +144,9 @@ Brain.save()
 
 想要使用 tensorboard 在Brain 初始化时 output_graph 设置为 True 即可。
 
-程序运行完之后，进入当前目录，terminal 输入 ```tensorboard --logdir graph```,同时将终端中输出的网址复制到浏览器中，便可以看到之前定义的视图框架了。(网址为http://localhost:6006/)
+程序运行之后，进入当前目录，terminal 输入 ```tensorboard --logdir graph```,同时将终端中输出的网址复制到浏览器中，便可以看到之前定义的视图框架了。(网址为http://localhost:6006/)
 
-点开 GRAPHS ,可以查看网络结构，里面的每个方框都可以点开查看
+点开 GRAPHS ,可以查看网络结构，里面的每个方框都可以点开查看
 
 ![ p_3](img/p_3.png)
 
