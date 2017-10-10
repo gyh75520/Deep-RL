@@ -37,7 +37,7 @@ class Agent:
     def learn(self):
 ```
 ## DQN 的 Brain 实现
-使用了两种神经网络，分别是```MLP.py```(普通神经网络)和```CNN.py```（卷积神经网络）
+实现了两种神经网络，分别是```MLP.py```(普通神经网络)和```CNN.py```（卷积神经网络）
 
 ### 普通神经网络
 ```MLP.py```
@@ -143,7 +143,7 @@ RL.learn() # 训练
 
 ## 存储和使用神经网络
 ### 存储
-在程序需要的地方加上下面的语句就可以了
+想要把训练好的神经网络存储下来，在程序需要的地方加上下面的语句就可以了
 ```python
 Brain.save()
 ```
@@ -160,12 +160,13 @@ Brain.save()
 
 点开 GRAPHS ,可以查看网络结构，里面的每个方框都可以点开查看
 
-![ p_3](img/p_3.png)
+<img src="img/p_3.png" width=444 height=513 />
+
 
 点开 SCALARS , 可以查看 cost 变化曲线
 
-![p_4](img/p_4.png)
+<img src="img/p_4.png" width=444 height=357 />
 
 点开 DISTRIBUTIONS 可以查看 Weights, biases 等的变化图表
 
-![p_5](img/p_5.png)
+<img src="img/p_5.png" width=444 height=273 />
