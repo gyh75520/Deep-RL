@@ -115,7 +115,7 @@ RL = Agent(
 初始化 Brain 这里 import 的是 MLP
 - n_actions 填入环境中的动作个数 比如 3
 - n_features 填入 observation ( state ) 的大小 比如 20
-- neurons_per_layer 填入神经网络隐藏层每层神经元数，比如 [2,4,8],[32,64] 数组的大小为层数 数值为每层神经元数
+- neurons_per_layer 填入神经网络隐藏层每层神经元数，比如 [2,4,8],[32,64] 数组的大小为层数 数值为每层神经元数
 - restore 如果为True 代表加载并使用存储的神经网络，False 代表不使用
 - output_graph 为True 的话，会使用tensorboard
 - 其他的参照代码中的注释
@@ -136,7 +136,7 @@ Brain.save()
 ```
 
 ### 使用
-当存储了神经网络之后，在Brain 初始化时，restore 设置为 True 即可。
+当存储了神经网络之后，在Brain 初始化时，restore 设置为 True 即可。
 
 ## 使用 tensorboard
  tensorboard 可以可视化我们所建造出来的神经网络，而且我加入了 loss 变化曲线 和 Weights, biases 等的变化图表
