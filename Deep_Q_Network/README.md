@@ -139,7 +139,7 @@ RL.store_memory(observation, action, reward, observation_) # 将 (s,a,r,s_) 存
 
 RL.learn() # 训练
 ```
-重复上面的过程进行训练
+重复上面的过程进行训练
 
 ## 存储和使用神经网络
 ### 存储
