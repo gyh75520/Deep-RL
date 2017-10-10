@@ -15,7 +15,7 @@
 class Agent:
     def __init__(
             self,
-            brain,  # 使用的神经网络 可以选择MLP或者CNN
+            brain,  # 使用的神经网络 可以选择MLP或者CNN
             observation_space_shape,
             n_actions,  # 动作数
             reward_decay=0.9,  # gamma参数
@@ -135,7 +135,7 @@ action = RL.choose_action(observation) # 使用 Agent 选择动作
 
 observation_, env_reward, done, info = env.step(action) # 把动作交互给环境，环境 反馈 reward 和 下一个 observation(state)
 
-RL.store_memory(observation, action, reward, observation_) # 将 (s,a,r,s_) 存储起来
+RL.store_memory(observation, action, reward, observation_) # 将 (s,a,r,s_) 存储起来
 
 RL.learn() # 训练
 ```
