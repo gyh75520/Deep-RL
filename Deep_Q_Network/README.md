@@ -1,11 +1,11 @@
 # deep Q-learning with experience replay
-![p_1](p_1.png)
+![p_1](img/p_1.png)
 
 使用 Tensorflow 来实现 DQN, 搭建了两个神经网络, target_net 用于预测 q_target 值, 他不会及时更新参数. eval_net 用于预测 q_eval, 这个神经网络拥有最新的神经网络参数. 不过这两个神经网络结构是完全一样的
 
 ![p_2](p_2.png)
 
-我们把 DQN 分成 Agent 和 Brain 两部分，Agent 的初始化参数需要选择 Brain，然后使用 Agent 和 环境交互 ，不停的训练。
+我们把 DQN 分成 Agent 和 Brain 两部分，Agent 的初始化参数需要选择 Brain，然后使用 Agent 和 环境交互 ，不停的训练。
 
 ## DQN 的 Agent 实现
 ```Agent.py``` 文件包含了实现的细节
@@ -26,7 +26,7 @@ class Agent:
             replace_target_iter=300,  # 更换 target_net 的步数
         ):
 
-        # 存储样本（记忆）
+        # 存储样本（记忆）
         def store_memory(self, s, a, r, s_):
 
         # 选择动作    
@@ -116,7 +116,7 @@ RL = Agent(
 - n_actions 填入环境中的动作个数 比如 3
 - n_features 填入 observation ( state ) 的大小 比如 20
 - neurons_per_layer 填入神经网络隐藏层每层神经元数，比如 [2,4,8],[32,64] 数组的大小为层数 数值为每层神经元数
-- restore 如果为True 代表加载并使用存储的神经网络，False 代表不使用
+- restore 如果为True 代表加载并使用存储的神经网络，False 代表不使用
 - output_graph 为True 的话，会使用tensorboard
 - 其他的参照代码中的注释
 
@@ -140,7 +140,7 @@ Brain.save()
 
 
 ## 使用 tensorboard
- tensorboard 可以可视化我们所建造出来的神经网络，而且我加入了 loss 变化曲线 和 Weights, biases 等的变化图表
+ tensorboard 可以可视化我们所建造出来的神经网络，而且我加入了 loss 变化曲线 和 Weights, biases 等的变化图表
 
 想要使用 tensorboard 在Brain 初始化时 output_graph 设置为 True 即可。
 
@@ -154,6 +154,6 @@ Brain.save()
 
 ![p_4](p_4.png)
 
-点开 DISTRIBUTIONS 可以查看 Weights, biases 等的变化图表
+点开 DISTRIBUTIONS 可以查看 Weights, biases 等的变化图表
 
 ![p_5](p_5.png)
