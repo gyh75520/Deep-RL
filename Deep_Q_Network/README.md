@@ -26,14 +26,14 @@ class Agent:
             replace_target_iter=300,  # 更换 target_net 的步数
         ):
 
-        # 存储样本（记忆）
-        def store_memory(self, s, a, r, s_):
+    # 存储样本（记忆）
+    def store_memory(self, s, a, r, s_):
 
-        # 选择动作    
-        def choose_action(self, observation):
+    # 选择动作    
+    def choose_action(self, observation):
 
-        # 学习
-        def learn(self):
+    # 学习
+    def learn(self):
 ```
 ## DQN 的 Brain 实现
 使用了两种神经网络，分别是```MLP.py```(普通神经网络)和```CNN.py```（卷积神经网络）
@@ -137,7 +137,6 @@ Brain.save()
 
 ### 使用
 当存储了神经网络之后，在Brain 初始化时，restore 设置为 True 即可。
-
 
 ## 使用 tensorboard
  tensorboard 可以可视化我们所建造出来的神经网络，而且我加入了 loss 变化曲线 和 Weights, biases 等的变化图表
