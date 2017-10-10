@@ -3,7 +3,8 @@
 
 使用 Tensorflow 来实现 DQN, 搭建了两个神经网络, target_net 用于预测 q_target 值, 他不会及时更新参数. eval_net 用于预测 q_eval, 这个神经网络拥有最新的神经网络参数. 不过这两个神经网络结构是完全一样的
 
-![p_2](img/p_2.png){:height="50%" width="50%"}
+<img src="img/p_2.png" width=256 height=256 />
+
 
 我们把 DQN 分成 Agent 和 Brain 两部分，Agent 的初始化参数需要选择 Brain，然后使用 Agent 和 环境交互 ，不停的训练。
 
