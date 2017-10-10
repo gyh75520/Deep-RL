@@ -26,7 +26,7 @@ from MLP import Neural_Networks as brain
 from Agent import Agent
 
 Brain = brain(
-    n_actions=3,
+    n_actions=15,
     n_features=1000,
     neurons_per_layer=np.array([32]),
     learning_rate=0.00025,
@@ -35,7 +35,7 @@ Brain = brain(
 )
 RL = Agent(
     brain=Brain,
-    n_actions=3,
+    n_actions=15,
     observation_space_shape=(1000,),
     reward_decay=0.9,
     replace_target_iter=100,
