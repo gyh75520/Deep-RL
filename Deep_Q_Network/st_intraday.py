@@ -28,7 +28,7 @@ from Agent import Agent
 Brain = brain(
     n_actions=15,
     n_features=1000,
-    neurons_per_layer=np.array([32]),
+    neurons_per_layer=np.array([2048, 1024, 2048, 1024]),
     learning_rate=0.00025,
     restore=False,
     output_graph=True,
@@ -120,6 +120,7 @@ class StrategyCY(Strategy):
 
         # 流动资金
         self.fund_pool = 50000
+        self.init_fund_pool = 50000
 
         # 交易粒度100股
         self.num_of_shares = 100
@@ -274,7 +275,7 @@ class StrategyCY(Strategy):
             # final reward
             if tick['time'][0:2] == '15':
                 self.episode += 1
-                self.reward = self.get_final_reward() + self.fund_pool
+                self.reward = self.get_final_reward() + self.fund_pool - self.init_fund_pool
                 self.pre_state = self.this_state
                 self.this_state = None
                 RL.store_memory(self.pre_state, self.action, self.reward, self.this_state)
@@ -668,9 +669,9 @@ if __name__ == '__main__':
     for symbol in all_stock_yesterday['symbol']:
         stock_list.append(symbol)
     # 随机获取5支股票
-    sublist = random.sample(stock_list, 5)
+    # sublist = random.sample(stock_list, 5)
 
-    # sublist = ['sz300463','sz002737','sz300244','sz002405','sz300068']
+    sublist = ['sz300463', 'sz002737', 'sz300244', 'sz002405', 'sz300068']
     subdf = all_stock_yesterday[all_stock_yesterday['symbol'].isin(sublist)]
 
     i = 0
