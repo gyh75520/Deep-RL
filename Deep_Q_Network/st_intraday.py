@@ -39,9 +39,9 @@ RL = Agent(
     observation_space_shape=(1000,),
     reward_decay=0.9,
     replace_target_iter=100,
-    memory_size=2000,
+    memory_size=1000,
     MAX_EPSILON=0.9,
-    LAMBDA=0.001,
+    LAMBDA=0.0001,
 )
 
 
@@ -205,6 +205,7 @@ class StrategyCY(Strategy):
         self.state.sslist[code].avg_price = tick['amount'] / tick['volume']
         # self.do_orders(localtick)
         # self.trade_avg_price(localtick)
+        # self.sss(localtick)
         self.ss(localtick)
 
     # @staticmethod
@@ -215,6 +216,9 @@ class StrategyCY(Strategy):
         state[200 - 1] = 0
         # print (len(state))
         return state
+
+    def sss(self, tick):
+        print(tick['time'], tick['code'])
 
     def ss(self, tick):
         # initialize the price
@@ -251,10 +255,14 @@ class StrategyCY(Strategy):
 
                 # update price
                 self.price[i] = tick['price']
+                # 收盘价格作为第二日开盘价格
+                if tick['time'][0:2] == '15':
+                    INIT_PRICE[i] = tick['price']
 
         # count ticks
         # update the state, take an action and retreive reward every 5 ticks
         self.cnt += 1
+
         if self.cnt == 5:
             self.cnt = 0
             self.step += 1
@@ -271,6 +279,7 @@ class StrategyCY(Strategy):
                     RL.learn()
 
             self.action = RL.choose_action(self.this_state)
+            # self.action = np.random.randint(0, 15)
 
             # final reward
             if tick['time'][0:2] == '15':
@@ -282,46 +291,11 @@ class StrategyCY(Strategy):
                 self.total_steps += 1
                 print('episode end', self.episode, 'final_reward', self.reward)
                 self.init_dqn()
-
+                Brain.save()
             else:
                 # instaneous reward
                 self.reward, self.action = self.get_reward(self.action)
-                print('reward:', self.reward, 'action:', self.action, 'fund:', self.fund_pool, self.volumn)
-            # print (self.fund_pool, self.volumn)
-            # if a == 0:
-            #     r = self.bid(0)
-            # if a == 1:
-            #     r = 0
-            # if a == 2:
-            #     r = self.ask(0)
-            #
-            # if a == 3:
-            #     r = self.bid(1)
-            # if a == 4:
-            #     r = 0
-            # if a == 5:
-            #     r = self.ask(1)
-            #
-            # if a == 6:
-            #     r = self.bid(2)
-            # if a == 7:
-            #     r = 0
-            # if a == 8:
-            #     r = self.ask(2)
-            #
-            # if a == 9:
-            #     r = self.bid(3)
-            # if a == 10:
-            #     r = 0
-            # if a == 11:
-            #     r = self.ask(3)
-            #
-            # if a == 12:
-            #     r = self.bid(4)
-            # if a == 13:
-            #     r = 0
-            # if a == 14:
-            #     r = self.ask(4)
+                print('step:', self.step, 'reward:', self.reward, 'action:', self.action, 'fund:', self.fund_pool, self.volumn)
 
     def get_final_reward(self):
         r = 0
@@ -641,13 +615,13 @@ class StrategyCY(Strategy):
 
 
 if __name__ == '__main__':
-    curdate_str = '2017-05-24'
+    curdate_str = '2017-04-23'
     #sdk = api.Api('https://api.kuaiyudian.com/rpc')
 
-    filename = 'data/' + '2017-05-24' + '.json'
+    filename = 'data/' + '2017-04-23' + '.json'
     if not os.path.isfile(filename):
         sdk = api.Api('http://data-api.kuaiyutech.com/rpc2')
-        re = sdk.get_dailybars(end='2017-05-24', num_days=1)
+        re = sdk.get_dailybars(end='2017-04-23', num_days=1)
 
         lastdaybarlist = [x[0] for x in re]
 
@@ -695,5 +669,5 @@ if __name__ == '__main__':
     #engine = Engine(server='127.0.0.1:3000',strategy=st,token='x8874545454545')
     # engine.plot_assets()
     engine = Engine(strategy=st)
-    engine.run_rollback(subs=sub_str, account=account, start='2017-05-24', end='2017-05-24')
+    engine.run_rollback(subs=sub_str, account=account, start='2017-04-23', end='2017-04-29')
     #engine.run_realtime(subs='tick_30s.all', account=account)
