@@ -670,8 +670,8 @@ if __name__ == '__main__':
         stock_list.append(symbol)
     # 随机获取5支股票
     # sublist = random.sample(stock_list, 5)
-
     sublist = ['sz300463', 'sz002737', 'sz300244', 'sz002405', 'sz300068']
+
     subdf = all_stock_yesterday[all_stock_yesterday['symbol'].isin(sublist)]
 
     i = 0
