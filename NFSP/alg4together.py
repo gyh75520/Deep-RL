@@ -12,7 +12,7 @@ Brain = brain(
     n_actions=3,
     n_features=248,
     restore=restore_flag,
-    checkpoint_dir='My_NFSP_play1_Net',
+    checkpoint_dir='My_NFSP_two_play_Net',
     output_graph=True,
 )
 RL = Agent(
