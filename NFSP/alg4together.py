@@ -84,10 +84,19 @@ def main():
     playerName2 = "Alice"
     ply2 = player.Player(playerName2, port2, logpath)
 
+    threads = []
     t1 = threading.Thread(target=game4palyer, args=(ply,))
     t2 = threading.Thread(target=game4palyer, args=(ply2,))
-    t1.start()
-    t2.start()
+    threads.append(t1)
+    threads.append(t2)
+
+    for t in threads:
+        t.start()
+
+    for t in threads:
+        t.join()
+
+    Brain.save()  # 存储神经网络
 
 
 if __name__ == '__main__':
