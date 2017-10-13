@@ -92,7 +92,7 @@ RL = Agent(
 
 
 ```
-初始化 Brain 这里 import 的是 MLP
+初始化 Brain 
 - n_actions 填入环境中的动作个数 比如 3
 - n_features 填入 observation ( state ) 的大小 比如 20
 - restore 如果为True 代表加载并使用存储的神经网络，False 代表不使用
