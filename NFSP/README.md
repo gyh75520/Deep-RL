@@ -6,7 +6,7 @@
 - 使用监督学习更新策略
 
 使用 Tensorflow 来实现 NFSP, 搭建了三个神经网络.
-target_net 用于预测 q_target 值,也就是Best Respose, 他不会及时更新参数.
+target_net 用于预测 q_target 值,也就是Best Respose, 不会及时更新参数.
 eval_net 神经网络拥有最新的神经网络参数. 不过这两个神经网络结构是完全一样的。
 average_policy_net 该神经网络用于更新策略
 
