@@ -19,8 +19,8 @@ class Brain:
         ap_neurons_per_layer=np.array([1024, 512, 1024, 512]),  # ap_net 隐藏层每层神经元数
         activation_function=tf.nn.relu,  # 激活函数
         Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.GradientDescentOptimizer..
-        RL_learning_rate=0.1,  # 学习速率
-        ML_learning_rate=0.01,  # 学习速率
+        RL_learning_rate=0.01,  # 学习速率 0.1
+        ML_learning_rate=0.001,  # 学习速率 0.01
         w_initializer=tf.random_normal_initializer(0., 0.3),
         b_initializer=tf.constant_initializer(0.1),
         output_graph=False,  # 使用 tensorboard
