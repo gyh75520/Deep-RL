@@ -75,13 +75,18 @@ class Agent:
 
         batch_memory = random.sample(self.memory, batch_size)
 
-        no_state = np.zeros(self.observation_space_shape)
+        # no_state = np.zeros(self.observation_space_shape)
         states = np.array([o[0] for o in batch_memory])
-        states_ = np.array([(no_state if o[3] is None else o[3]) for o in batch_memory])
+        states_ = np.array([o[3] for o in batch_memory])
         action = np.array([o[1] for o in batch_memory])
         reward = np.array([o[2] for o in batch_memory])
+
         # 获取 q_next (target_net 产生的 q) 和 q_eval(eval_net 产生的 q)
-        q_next = self.brain.predict_target_action(states_)
+        q_next_is_end = np.zeros(self.n_actions)
+        # self.brain.predict_target_action([s]) 输出 [[x,x]] ravel() 去掉外层list [x,x]
+        q_next = np.array([(q_next_is_end if s is None else self.brain.predict_target_action([s]).ravel()) for s in states_])
+        # q_next = self.brain.predict_target_action(states_)
+        # print('q_next', q_next)
         q_eval = self.brain.predict_eval_action(states)
 
         # 计算 q_target

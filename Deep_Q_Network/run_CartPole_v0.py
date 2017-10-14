@@ -29,13 +29,13 @@ RL = Agent(
     reward_decay=0.9,
     replace_target_iter=100,
     memory_size=2000,
-    MAX_EPSILON=0.01,
+    MAX_EPSILON=0.9,
 )
 
 total_steps = 0
 
 
-for i_episode in range(140):
+for i_episode in range(120):
 
     observation = env.reset()
     ep_r = 0
