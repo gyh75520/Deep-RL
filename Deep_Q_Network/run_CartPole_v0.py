@@ -35,7 +35,7 @@ RL = Agent(
 total_steps = 0
 
 
-for i_episode in range(120):
+for i_episode in range(100):
 
     observation = env.reset()
     ep_r = 0
@@ -57,7 +57,7 @@ for i_episode in range(120):
         RL.store_memory(observation, action, reward, observation_)
 
         ep_r += reward
-        if total_steps > 1000:
+        if total_steps > 100:
             RL.learn()
 
         if done:
@@ -69,6 +69,5 @@ for i_episode in range(120):
 
         observation = observation_
         total_steps += 1
-    if i_episode == 139:
-        Brain.save()  # 存储神经网络
+Brain.save()  # 存储神经网络
 RL.plot_cost()
