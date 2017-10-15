@@ -18,10 +18,10 @@ class Agent:
         information_state_shape,  # 信息状态的 shape
         n_actions,  # 动作数
         reward_decay=0.9,  # gamma参数
-        MAX_EPSILON=0.88,  # epsilon 的最大值 0.08
+        MAX_EPSILON=0.08,  # epsilon 的最大值
         MIN_EPSILON=0.00,  # epsilon 的最小值
-        LAMBDA=0.001,  # speed of decay
-        RL_memory_size=6000,  # RL记忆的大小 600k
+        LAMBDA=0.0001,  # speed of decay
+        RL_memory_size=600,  # RL记忆的大小 600k
         SL_memory_size=20000,  # SL记忆的大小 20m
         RL_batch_size=256,  # 每次更新时从 RL_memory 里面取多少记忆出来
         SL_batch_size=256,  # 每次更新时从 SL_memory 里面取多少记忆出来
@@ -117,8 +117,13 @@ class Agent:
         eval_states_ = np.array([(no_state if o[3] is None else o[3]) for o in RL_batch_memory])
         eval_action = np.array([o[1] for o in RL_batch_memory])
         reward = np.array([o[2] for o in RL_batch_memory])
+
         # 获取 q_next (target_net 产生的 q) 和 q_eval(eval_net 产生的 q)
-        q_next = self.brain.predict_target_action(eval_states_)
+        q_next_is_end = np.zeros(self.n_actions)
+        # self.brain.predict_target_action([s]) 输出 [[x,x]] ravel() 去掉外层list [x,x]
+        q_next = np.array([(q_next_is_end if o[3] is None else self.brain.predict_target_action([o[3]]).ravel()) for o in RL_batch_memory])
+        # q_next = self.brain.predict_target_action(eval_states_)
+        # print('q_next', q_next)
         q_eval = self.brain.predict_eval_action(eval_states)
 
         # 计算 q_target
