@@ -12,7 +12,12 @@ print(env.observation_space)
 print(env.observation_space.high)
 print(env.observation_space.low)
 
-Brain = brain(n_actions=env.action_space.n, n_features=env.observation_space.shape[0], neurons_per_layer=np.array([64]), learning_rate=0.00025, output_graph=True)
+Brain = brain(
+    n_actions=env.action_space.n,
+    n_features=env.observation_space.shape[0],
+    neurons_per_layer=np.array([8, 4]),
+    learning_rate=0.01,
+    output_graph=True)
 RL = Agent(
     brain=Brain,
     n_actions=env.action_space.n,
