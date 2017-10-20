@@ -23,6 +23,7 @@ class Neural_Networks:
         b_initializer=tf.constant_initializer(0.1),
         output_graph=False,  # 使用 tensorboard
         restore=False,  # 是否使用存储的神经网络
+        checkpoint_dir='My_MLP_Net',  # 存储的dir name
     ):
         self.n_actions = n_actions
         self.n_features = n_features
@@ -34,7 +35,7 @@ class Neural_Networks:
         self.b_initializer = b_initializer
         self.output_graph = output_graph
         self._build_net()
-        self.checkpoint_dir = 'My_MLP_Net'  # 存储的dir name
+        self.checkpoint_dir = checkpoint_dir
         self.sess = tf.Session()
 
         if self.output_graph:
