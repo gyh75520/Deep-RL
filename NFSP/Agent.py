@@ -49,6 +49,8 @@ class Agent:
 
         # 记录学习次数 (用于判断是否更换 target_net 参数)
         self.learn_step_counter = 0
+        # 记录reservoir sampling 的次数
+        self.reservoir_step = 0
 
         # 初始化全 0 记忆 [s, a, r, s_]
         self.RL_memory = []
@@ -96,9 +98,16 @@ class Agent:
             self.RL_memory.pop(0)
 
         if self.policy_sigma == 1:
-            self.SL_memory.append((s, a))
-            if len(self.SL_memory) > self.SL_memory_size:
-                self.SL_memory.pop(0)
+            self.reservoir_sampling((s, a))
+
+    def reservoir_sampling(self, sample):
+        if self.reservoir_step < self.SL_memory_size:
+            self.SL_memory.append(sample)
+        else:
+            j = np.random.randint(0, self.reservoir_step + 1)
+            if j < self.SL_memory_size:
+                self.SL_memory[j] = sample
+        self.reservoir_step += 1
 
     def learn(self):
         # 每隔 replace_target_iter 步 替换 target_net 参数
