@@ -92,7 +92,7 @@ RL = Agent(
 
 
 ```
-初始化 Brain 
+初始化 Brain
 - n_actions 填入环境中的动作个数 比如 3
 - n_features 填入 observation ( state ) 的大小 比如 20
 - restore 如果为True 代表加载并使用存储的神经网络，False 代表不使用
@@ -164,11 +164,26 @@ GAMMA值并不是越高越好，实验来看，GAMMA值 = 0.9 反而效果最好
 准则之二是正回报要稍稍大一点，因为Q值的变化过程是先降低，然后慢慢提升，最初阶段是负回报统治的时期，人工的干预提升正回报，有助于训练。
 
 ## 遇到的问题
-### Loss计算中出现NAN值
+### Cross Entropy Loss计算中出现NAN值
 一般是输入的值中出现了负数值或者0值。
 使用```tf.clip_by_value```函数限制输出的大小，将输出的值限定在 (1e-10, 1.0) 之间，避免了 log0 为负无穷的情况。
 ### 更新网络时出现NAN值
 ```
 InvalidArgumentError (see abovefor traceback): Nan in summary histogram for: weight_1
 ```
-这样的情况，是由于优化学习率设置不当导致的，而且一般是学习率设置过高导致的，因而此时可以尝试使用更小的学习率进行训练来解决这样的问题。
+#### 优化学习率
+这样的情况，可能是由于优化学习率设置不当导致的，而且一般是学习率设置过高导致的，因而此时可以尝试使用更小的学习率进行训练来解决这样的问题。
+实际上，降低学习率也就是防止梯度爆炸。
+
+#### 梯度爆炸 gradient explosion
+经过多层累乘，梯度会迅速增长，造成梯度爆炸
+使用梯度裁剪 防止梯度爆炸
+```python
+optimizer = tf.train.AdamOptimizer(1e-3)
+gradients, variables = zip(*optimizer.compute_gradients(loss))
+gradients = [
+    None if gradient is None else tf.clip_by_norm(gradient, 5.0)
+    for gradient in gradients]
+optimize = optimizer.apply_gradients(zip(gradients, variables))
+```
+```tf.clip_by_global_norm（t, clip_norm）```作用在于将传入的梯度张量t的L2范数进行了上限约束，约束值即为```clip_norm```，如果t的L2范数超过了```clip_norm```，则变换为```t * clip_norm / l2norm(t)```，如此一来，变换后的t的L2范数便小于等于```clip_norm```了。
