@@ -163,6 +163,7 @@ class Brain:
     # 训练 eval 神经网络
     def train_eval_net(self, input_s, q_target, learn_step_counter):
         # _, cost = self.sess.run([self.eval_net_train_op, self.eval_net_loss], feed_dict={self.eval_s: input_s, self.q_target: q_target})
+        # SGD
         row = input_s.shape[0]
         for r in range(row):
             _, cost = self.sess.run([self.eval_net_train_op, self.eval_net_loss], feed_dict={self.eval_s: [input_s[r]], self.q_target: [q_target[r]]})

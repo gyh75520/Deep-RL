@@ -98,9 +98,9 @@ class Agent:
             self.RL_memory.pop(0)
 
         if self.policy_sigma == 1:
-            self.reservoir_sampling((s, a))
+            self._reservoir_sampling((s, a))
 
-    def reservoir_sampling(self, sample):
+    def _reservoir_sampling(self, sample):
         if self.reservoir_step < self.SL_memory_size:
             self.SL_memory.append(sample)
         else:
