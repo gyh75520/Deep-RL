@@ -100,13 +100,14 @@ class Agent:
         if self.policy_sigma == 1:
             self._reservoir_sampling((s, a))
 
+    # exponentially-averaged reservoir sampling
     def _reservoir_sampling(self, sample):
         if self.reservoir_step < self.SL_memory_size:
             self.SL_memory.append(sample)
         else:
-            j = np.random.randint(0, self.reservoir_step + 1)
-            if j < self.SL_memory_size:
-                self.SL_memory[j] = sample
+            index = np.random.randint(0, self.SL_memory_size)
+            if np.random.uniform() < 0.25:
+                self.SL_memory[index] = sample
         self.reservoir_step += 1
 
     def learn(self):
@@ -144,7 +145,7 @@ class Agent:
         # eval_action 必须是 0,1,2... print('eval_act_index:', eval_act_index)
 
         q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
-
+        # print('q_target', q_target, 'shape', q_target.shape)
         cost_eval = self.brain.train_eval_net(eval_states, q_target, self.learn_step_counter)
         self.eval_net_cost.append(cost_eval)
 
