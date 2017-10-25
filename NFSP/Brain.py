@@ -154,14 +154,19 @@ class Brain:
             c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
             self.q_next = build_eval_layers(self.target_s, self.eval_neurons_per_layer, c_names)
 
+    # 训练 average_policy 神经网络
     def train_ap_net(self, input_s, action, learn_step_counter):
-        # 训练 average_policy 神经网络
+
         _, cost = self.sess.run([self.ap_net_train_op, self.ap_net_loss], feed_dict={self.ap_s: input_s, self.action: action})
         return cost
 
+    # 训练 eval 神经网络
     def train_eval_net(self, input_s, q_target, learn_step_counter):
-        # 训练 eval 神经网络
-        _, cost = self.sess.run([self.eval_net_train_op, self.eval_net_loss], feed_dict={self.eval_s: input_s, self.q_target: q_target})
+        # _, cost = self.sess.run([self.eval_net_train_op, self.eval_net_loss], feed_dict={self.eval_s: input_s, self.q_target: q_target})
+        row = input_s.shape[0]
+        for r in range(row):
+            _, cost = self.sess.run([self.eval_net_train_op, self.eval_net_loss], feed_dict={self.eval_s: [input_s[r]], self.q_target: [q_target[r]]})
+        print('eval_net_loss', cost)
         return cost
 
     def output_tensorboard(self, ap_s, action, eval_s, q_target, target_s, learn_step_counter):
