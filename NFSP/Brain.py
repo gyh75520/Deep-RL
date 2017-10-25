@@ -141,7 +141,12 @@ class Brain:
                 tf.summary.scalar('eval_net_loss', self.eval_net_loss)
 
         with tf.variable_scope('eval_net_train'):
-            self.eval_net_train_op = self.Optimizer(self.RL_lr).minimize(self.eval_net_loss)
+            # self.eval_net_train_op = self.Optimizer(self.RL_lr).minimize(self.eval_net_loss)
+            # apply gradient clipping to avoid gradient explosion
+            optimizer = self.Optimizer(self.RL_lr)
+            gradients, variables = zip(*optimizer.compute_gradients(self.eval_net_loss))
+            gradients = [None if gradient is None else tf.clip_by_norm(gradient, 5.0) for gradient in gradients]
+            self.eval_net_train_op = optimizer.apply_gradients(zip(gradients, variables))
 
         # ------------------ 创建 target 神经网络, 提供 target Q ------------------
         self.target_s = tf.placeholder(tf.float32, [None, self.n_features], name='target_s')
