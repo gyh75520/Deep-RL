@@ -85,25 +85,21 @@ class Agent:
         q_next_is_end = np.zeros(self.n_actions)
         # self.brain.predict_target_action([s]) 输出 [[x,x]] ravel() 去掉外层list [x,x]
         q_next = np.array([(q_next_is_end if s is None else self.brain.predict_target_action([s]).ravel()) for s in states_])
-        # q_next = self.brain.predict_target_action(states_)
-        # print('q_next', q_next)
-        q_eval = self.brain.predict_eval_action(states)
 
-        # 计算 q_target
-        q_target = q_eval.copy()
-        # print('\nstates:', states.shape)
-        # print('\nq_target:', q_target.shape)
-        batch_index = np.arange(batch_size, dtype=np.int32)
-        eval_act_index = action.astype(int)
-        # action 必须是 0,1,2... print('eval_act_index:', eval_act_index)
-
-        q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
-
+        '''
+        q_target_ = []
+        for i in range(0, batch_size):
+            q_target_.append(reward[i] + self.gamma * np.max(q_next[i]))
+        下面的损失了一些精度
+        '''
+        q_target = reward + self.gamma * np.max(q_next, axis=1)
+        # One Hot Encoding
+        one_hot_action = np.eye(self.n_actions)[action]
         # 训练 eval 神经网络
-        cost = self.brain.train(states, q_target, self.learn_step_counter)
+        cost = self.brain.train(states, q_target, one_hot_action, self.learn_step_counter)
         self.cost_his.append(cost)
         # brain 中 的 output_graph 需要为 True
-        self.brain.output_tensorboard(states, q_target, states_, self.learn_step_counter)
+        self.brain.output_tensorboard(states, q_target, states_, one_hot_action, self.learn_step_counter)
 
         # 逐渐减少 epsilon, 降低行为的随机性
         self.learn_step_counter += 1
