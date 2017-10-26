@@ -22,7 +22,7 @@ class Agent:
         MIN_EPSILON=0.00,  # epsilon 的最小值
         LAMBDA=0.0001,  # speed of decay
         RL_memory_size=6000,  # RL记忆的大小 600k
-        SL_memory_size=20000,  # SL记忆的大小 20m
+        SL_memory_size=200000,  # SL记忆的大小 20m
         RL_batch_size=256,  # 每次更新时从 RL_memory 里面取多少记忆出来
         SL_batch_size=256,  # 每次更新时从 SL_memory 里面取多少记忆出来
         replace_target_iter=1000,  # 更换 target_net 的步数 1000

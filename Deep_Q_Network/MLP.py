@@ -17,7 +17,7 @@ class Neural_Networks:
         n_features,  # 特征数，也就是输入的 vector 大小
         neurons_per_layer=np.array([10]),  # 隐藏层每层神经元数
         activation_function=tf.nn.relu,  # 激活函数
-        Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.RMSPropOptimizer..
+        Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.RMSPropOptimizer GradientDescentOptimizer..
         learning_rate=0.01,  # 学习速率
         w_initializer=tf.random_normal_initializer(0., 0.3),
         b_initializer=tf.constant_initializer(0.1),
