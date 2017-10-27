@@ -119,8 +119,7 @@ class Neural_Networks:
 
     def train(self, input_s, q_target, action, learn_step_counter):
         # 训练 eval 神经网络
-        _, cost = self.sess.run([self.train_op, self.loss], feed_dict={self.s: input_s, self.action: action, self.q_target: q_target})
-        return cost
+        self.sess.run(self.train_op, feed_dict={self.s: input_s, self.action: action, self.q_target: q_target})
 
     def output_tensorboard(self, input_s, q_target, input_s_, action, learn_step_counter):
         if self.output_graph:

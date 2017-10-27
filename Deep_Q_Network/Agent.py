@@ -44,10 +44,11 @@ class Agent:
 
         # 初始化全 0 记忆 [s, a, r, s_]
         self.memory = []
+        # self.memory = deque()
 
-    def store_memory(self, s, a, r, s_):
+    def store_memory(self, s, a, r, s_, done):
 
-        self.memory.append((s, a, r, s_))
+        self.memory.append((s, a, r, s_, done))
         if len(self.memory) > self.memory_size:
             self.memory.pop(0)
 
@@ -82,22 +83,29 @@ class Agent:
         reward = np.array([o[2] for o in batch_memory])
 
         # 获取 q_next (target_net 产生的 q) 和 q_eval(eval_net 产生的 q)
-        q_next_is_end = np.zeros(self.n_actions)
+        # q_next_is_end = np.zeros(self.n_actions)
         # self.brain.predict_target_action([s]) 输出 [[x,x]] ravel() 去掉外层list [x,x]
-        q_next = np.array([(q_next_is_end if s is None else self.brain.predict_target_action([s]).ravel()) for s in states_])
-
+        # q_next = np.array([(q_next_is_end if o[4] is True else self.brain.predict_target_action([o[3]]).ravel()) for o in batch_memory])
+        q_next = self.brain.predict_target_action(states_)
         '''
         q_target_ = []
         for i in range(0, batch_size):
             q_target_.append(reward[i] + self.gamma * np.max(q_next[i]))
         下面的损失了一些精度
         '''
-        q_target = reward + self.gamma * np.max(q_next, axis=1)
+        # q_target = reward + self.gamma * np.max(q_next, axis=1)
+        q_target = []
+        for i in range(0, batch_size):
+            done = batch_memory[i][4]
+            if done:
+                q_target.append(reward[i])
+            else:
+                q_target.append(reward[i] + self.gamma * np.max(q_next[i]))
         # One Hot Encoding
         one_hot_action = np.eye(self.n_actions)[action]
         # 训练 eval 神经网络
-        cost = self.brain.train(states, q_target, one_hot_action, self.learn_step_counter)
-        self.cost_his.append(cost)
+        self.brain.train(states, q_target, one_hot_action, self.learn_step_counter)
+
         # brain 中 的 output_graph 需要为 True
         self.brain.output_tensorboard(states, q_target, states_, one_hot_action, self.learn_step_counter)
 
@@ -105,6 +113,7 @@ class Agent:
         self.learn_step_counter += 1
         self.epsilon = self.MIN_EPSILON + (self.MAX_EPSILON - self.MIN_EPSILON) * np.exp(-self.LAMBDA * self.learn_step_counter)
 
+    # 这个方法已经不用了
     def plot_cost(self):
         # cost 曲线
         import matplotlib.pyplot as plt

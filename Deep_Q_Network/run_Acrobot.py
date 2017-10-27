@@ -45,7 +45,7 @@ for i_episode in range(20):
 
         totalR += reward
 
-        RL.store_memory(observation, action, reward, observation_)
+        RL.store_memory(observation, action, reward, observation_, done)
 
         if total_steps > 1000:
             RL.learn()

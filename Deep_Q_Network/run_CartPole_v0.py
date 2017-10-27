@@ -5,7 +5,7 @@ from Agent import Agent
 import numpy as np
 
 env = gym.make('CartPole-v0')   # 定义使用 gym 库中的那一个环境
-env = env.unwrapped  # 不做这个会有很多限制
+env = env.unwrapped  # 注释掉的话 每局游戏 reward之和最高200
 
 print(env.action_space.sample())  # 查看这个环境中可用的 action 有多少个
 print(env.observation_space.shape)    # 查看这个环境中可用的 state 的 observation 有多少个
@@ -28,14 +28,14 @@ RL = Agent(
     observation_space_shape=env.observation_space.shape,
     reward_decay=0.9,
     replace_target_iter=100,
-    memory_size=2000,
+    memory_size=20000,
     MAX_EPSILON=0.9,
 )
 
 total_steps = 0
 
 
-for i_episode in range(150):
+for i_episode in range(200):
 
     observation = env.reset()
     ep_r = 0
@@ -45,24 +45,16 @@ for i_episode in range(150):
 
         action = RL.choose_action(observation)
 
-        observation_, env_reward, done, info = env.step(action)
-
-        # the smaller theta and closer to center the better
-
-        x, x_dot, theta, theta_dot = observation_
-        r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
-        r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5
-        reward = r1 + r2
-        totalR += env_reward
-        RL.store_memory(observation, action, reward, observation_)
+        observation_, reward, done, info = env.step(action)
+        totalR += reward
+        RL.store_memory(observation, action, reward, observation_, done)
 
         ep_r += reward
-        if total_steps > 100:
+        if total_steps > 1:
             RL.learn()
 
         if done:
             print('episode: ', i_episode,
-                  'ep_r: ', round(ep_r, 2),
                   ' epsilon: ', round(RL.epsilon, 2),
                   'total_reward:', totalR)
             break
