@@ -18,7 +18,7 @@ Brain = brain(
     n_actions=env.action_space.n,
     n_features=env.observation_space.shape[0],
     neurons_per_layer=np.array([8, 4]),
-    learning_rate=0.01,
+    learning_rate=0.001,
     output_graph=True,
     restore=False,
 )
@@ -30,12 +30,13 @@ RL = Agent(
     replace_target_iter=100,
     memory_size=20000,
     MAX_EPSILON=0.9,
+    LAMBDA=0.0001,
 )
 
 total_steps = 0
 
 
-for i_episode in range(200):
+for i_episode in range(400):
 
     observation = env.reset()
     ep_r = 0
@@ -50,7 +51,7 @@ for i_episode in range(200):
         RL.store_memory(observation, action, reward, observation_, done)
 
         ep_r += reward
-        if total_steps > 1:
+        if total_steps > 50:
             RL.learn()
 
         if done:
@@ -62,4 +63,3 @@ for i_episode in range(200):
         observation = observation_
         total_steps += 1
 Brain.save()  # 存储神经网络
-RL.plot_cost()

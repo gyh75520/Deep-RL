@@ -112,7 +112,7 @@ class Brain:
 
         # ------------------ 创建 average_policy 神经网络, 预测 action 概率 ------------------
         self.ap_s = tf.placeholder(tf.float32, [None, self.n_features], name='average_policy_s')
-        self.action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')
+        self.ap_action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')
 
         with tf.variable_scope('average_policy_net'):
             c_names = ['average_policy_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
@@ -120,7 +120,7 @@ class Brain:
 
         with tf.variable_scope('ap_net_loss'):
             # tf.clip_by_value函数是为了限制输出的大小，为了避免log0为负无穷的情况，将输出的值限定在(1e-10, 1.0)之间
-            self.ap_net_loss = tf.reduce_mean(-tf.reduce_sum(self.action * tf.log(tf.clip_by_value(self.policy, 1e-10, 1.0)), axis=1))  # 交叉熵
+            self.ap_net_loss = tf.reduce_mean(-tf.reduce_sum(self.ap_action * tf.log(tf.clip_by_value(self.policy, 1e-10, 1.0)), axis=1))  # 交叉熵
             if self.output_graph:
                 tf.summary.scalar('ap_net_loss', self.ap_net_loss)
 
@@ -129,14 +129,16 @@ class Brain:
 
         # ------------------ 创建 eval 神经网络, 及时提升参数 ------------------
         self.eval_s = tf.placeholder(tf.float32, [None, self.n_features], name='eval_s')
-        self.q_target = tf.placeholder(tf.float32, [None, self.n_actions], name='q_target')  # for calculating eval loss
+        self.q_target = tf.placeholder(tf.float32, [None], name='q_target')  # for calculating eval loss
 
         with tf.variable_scope('eval_net'):
             c_names = ['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
             self.q_eval = build_eval_layers(self.eval_s, self.eval_neurons_per_layer, c_names)
 
         with tf.variable_scope('eval_net_loss'):
-            self.eval_net_loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
+            self.eval_action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')  # one hot presentatio
+            Q_eval_action = tf.reduce_sum(tf.multiply(self.q_eval, self.eval_action), reduction_indices=1)
+            self.eval_net_loss = tf.reduce_mean(tf.squared_difference(self.q_target, Q_eval_action))
             if self.output_graph:
                 tf.summary.scalar('eval_net_loss', self.eval_net_loss)
 
@@ -155,25 +157,23 @@ class Brain:
             self.q_next = build_eval_layers(self.target_s, self.eval_neurons_per_layer, c_names)
 
     # 训练 average_policy 神经网络
-    def train_ap_net(self, input_s, action, learn_step_counter):
-        _, cost = self.sess.run([self.ap_net_train_op, self.ap_net_loss], feed_dict={self.ap_s: input_s, self.action: action})
-        return cost
+    def train_ap_net(self, input_s, ap_action, learn_step_counter):
+        self.sess.run(self.ap_net_train_op, feed_dict={self.ap_s: input_s, self.ap_action: ap_action})
 
     # 训练 eval 神经网络
-    def train_eval_net(self, input_s, q_target, learn_step_counter):
-        _, cost = self.sess.run([self.eval_net_train_op, self.eval_net_loss], feed_dict={self.eval_s: input_s, self.q_target: q_target})
+    def train_eval_net(self, input_s, q_target, eval_action, learn_step_counter):
+        self.sess.run(self.eval_net_train_op, feed_dict={self.eval_s: input_s, self.q_target: q_target, self.eval_action: eval_action})
         # SGD
         # row = input_s.shape[0]
         # for r in range(row):
         #     _, cost = self.sess.run([self.eval_net_train_op, self.eval_net_loss], feed_dict={self.eval_s: [input_s[r]], self.q_target: [q_target[r]]})
-        print('eval_net_loss', cost)
-        return cost
 
-    def output_tensorboard(self, ap_s, action, eval_s, q_target, target_s, learn_step_counter):
+    def output_tensorboard(self, ap_s, ap_action, eval_action, eval_s, q_target, target_s, learn_step_counter):
         if self.output_graph:
             # 每隔100步记录一次
             if learn_step_counter % 100 == 0:
-                rs = self.sess.run(self.merged, feed_dict={self.ap_s: ap_s, self.action: action, self.eval_s: eval_s, self.q_target: q_target, self.target_s: target_s})
+                rs = self.sess.run(self.merged, feed_dict={self.ap_s: ap_s, self.ap_action: ap_action, self.eval_action: eval_action,
+                                                           self.eval_s: eval_s, self.q_target: q_target, self.target_s: target_s})
                 self.writer.add_summary(rs, learn_step_counter)
 
     def predict_eval_action(self, input_s):

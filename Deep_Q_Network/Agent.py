@@ -73,7 +73,6 @@ class Agent:
 
         # 从 memory 中随机抽取 batch_size 大小的记忆
         batch_size = min(self.batch_size, len(self.memory))
-
         batch_memory = random.sample(self.memory, batch_size)
 
         # no_state = np.zeros(self.observation_space_shape)
@@ -101,6 +100,7 @@ class Agent:
                 q_target.append(reward[i])
             else:
                 q_target.append(reward[i] + self.gamma * np.max(q_next[i]))
+
         # One Hot Encoding
         one_hot_action = np.eye(self.n_actions)[action]
         # 训练 eval 神经网络

@@ -103,8 +103,8 @@ class Neural_Networks:
         with tf.variable_scope('loss'):
             self.action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')  # one hot presentatio
             Q_action = tf.reduce_sum(tf.multiply(self.q_eval, self.action), reduction_indices=1)
-            # self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
-            self.loss = tf.reduce_mean(tf.square(self.q_target - Q_action))
+            self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, Q_action))
+            # self.loss = tf.reduce_mean(tf.square(self.q_target - Q_action))
             if self.output_graph:
                 tf.summary.scalar('loss', self.loss)
 
@@ -117,8 +117,8 @@ class Neural_Networks:
             c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
             self.q_next = build_layers(self.s_, self.neurons_per_layer, c_names)
 
+    # 训练 eval 神经网络
     def train(self, input_s, q_target, action, learn_step_counter):
-        # 训练 eval 神经网络
         self.sess.run(self.train_op, feed_dict={self.s: input_s, self.action: action, self.q_target: q_target})
 
     def output_tensorboard(self, input_s, q_target, input_s_, action, learn_step_counter):

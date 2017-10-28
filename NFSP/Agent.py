@@ -91,9 +91,9 @@ class Agent:
                     break
         return action
 
-    def store_memory(self, s, a, r, s_):
+    def store_memory(self, s, a, r, s_, done):
 
-        self.RL_memory.append((s, a, r, s_))
+        self.RL_memory.append((s, a, r, s_, done))
         if len(self.RL_memory) > self.RL_memory_size:
             self.RL_memory.pop(0)
 
@@ -128,26 +128,20 @@ class Agent:
         eval_action = np.array([o[1] for o in RL_batch_memory])
         reward = np.array([o[2] for o in RL_batch_memory])
 
-        # 获取 q_next (target_net 产生的 q) 和 q_eval(eval_net 产生的 q)
-        q_next_is_end = np.zeros(self.n_actions)
-        # self.brain.predict_target_action([s]) 输出 [[x,x]] ravel() 去掉外层list [x,x]
-        q_next = np.array([(q_next_is_end if o[3] is None else self.brain.predict_target_action([o[3]]).ravel()) for o in RL_batch_memory])
-        # q_next = self.brain.predict_target_action(eval_states_)
-        # print('q_next', q_next)
-        q_eval = self.brain.predict_eval_action(eval_states)
+        q_next = self.brain.predict_target_action(eval_states_)
 
-        # 计算 q_target
-        q_target = q_eval.copy()
-        # print('\nstates:', states.shape)
-        # print('\nq_target:', q_target.shape)
-        batch_index = np.arange(RL_batch_size, dtype=np.int32)
-        eval_act_index = eval_action.astype(int)
-        # eval_action 必须是 0,1,2... print('eval_act_index:', eval_act_index)
+        q_target = []
+        for i in range(0, RL_batch_size):
+            done = RL_batch_memory[i][4]
+            if done:
+                q_target.append(reward[i])
+            else:
+                q_target.append(reward[i] + self.gamma * np.max(q_next[i]))
 
-        q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
-        # print('q_target', q_target, 'shape', q_target.shape)
-        cost_eval = self.brain.train_eval_net(eval_states, q_target, self.learn_step_counter)
-        self.eval_net_cost.append(cost_eval)
+        # One Hot Encoding
+        one_hot_eval_action = np.eye(self.n_actions)[eval_action]
+        # 训练 eval 神经网络
+        self.brain.train_eval_net(eval_states, q_target, one_hot_eval_action, self.learn_step_counter)
 
         # ------------------ 训练 average_policy 神经网络 ------------------
         # 从 memory 中随机抽取 RL_batch_size 大小的记忆
@@ -158,12 +152,11 @@ class Agent:
             ap_action = np.array([o[1] for o in SL_batch_memory])
 
             # One Hot Encoding
-            one_hot_action = np.eye(self.n_actions)[ap_action]
-
-            cost_ap = self.brain.train_ap_net(ap_states, one_hot_action, self.learn_step_counter)
-            self.ap_net_cost.append(cost_ap)
+            one_hot_ap_action = np.eye(self.n_actions)[ap_action]
+            # 训练 ap 神经网络
+            self.brain.train_ap_net(ap_states,  one_hot_ap_action, self.learn_step_counter)
             # brain 中 的 output_graph 需要为 True
-            self.brain.output_tensorboard(ap_states, one_hot_action, eval_states, q_target, eval_states_, self.learn_step_counter)
+            self.brain.output_tensorboard(ap_states, one_hot_ap_action, one_hot_eval_action, eval_states, q_target, eval_states_, self.learn_step_counter)
 
         # 逐渐减少 epsilon, 降低行为的随机性
         self.learn_step_counter += 1
