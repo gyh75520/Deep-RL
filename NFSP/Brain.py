@@ -120,7 +120,8 @@ class Brain:
 
         with tf.variable_scope('ap_net_loss'):
             # tf.clip_by_value函数是为了限制输出的大小，为了避免log0为负无穷的情况，将输出的值限定在(1e-10, 1.0)之间
-            self.ap_net_loss = tf.reduce_mean(-tf.reduce_sum(self.ap_action * tf.log(tf.clip_by_value(self.policy, 1e-10, 1.0)), axis=1))  # 交叉熵
+            # self.ap_net_loss = tf.reduce_mean(-tf.reduce_sum(self.ap_action * tf.log(tf.clip_by_value(self.policy, 1e-10, 1.0)), axis=1))  # 交叉熵
+            self.ap_net_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.ap_action, logits=self.policy))
             if self.output_graph:
                 tf.summary.scalar('ap_net_loss', self.ap_net_loss)
 
