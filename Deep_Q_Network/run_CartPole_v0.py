@@ -28,7 +28,7 @@ RL = Agent(
     observation_space_shape=env.observation_space.shape,
     reward_decay=0.9,
     replace_target_iter=200,
-    memory_size=20000,
+    memory_size=30000,
     MAX_EPSILON=0.9,
     LAMBDA=0.0001,
 )

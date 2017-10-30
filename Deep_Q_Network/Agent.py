@@ -41,7 +41,7 @@ class Agent:
 
         # 记录学习次数 (用于判断是否更换 target_net 参数)
         self.learn_step_counter = 0
-
+        self.reset_epsilon_step = 0
         # 初始化全 0 记忆 [s, a, r, s_]
         self.memory = []
         # self.memory = deque()
@@ -111,7 +111,10 @@ class Agent:
 
         # 逐渐减少 epsilon, 降低行为的随机性
         self.learn_step_counter += 1
-        self.epsilon = self.MIN_EPSILON + (self.MAX_EPSILON - self.MIN_EPSILON) * np.exp(-self.LAMBDA * self.learn_step_counter)
+        self.epsilon = self.MIN_EPSILON + (self.MAX_EPSILON - self.MIN_EPSILON) * np.exp(-self.LAMBDA * (self.learn_step_counter - self.reset_epsilon_step))
+
+    def reset_epsilon(self):
+        self.reset_epsilon_step = self.learn_step_counter + 1
 
     # 这个方法已经不用了
     def plot_cost(self):
