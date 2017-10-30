@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import gym
-from MLP import Neural_Networks as brain
+from MLP_Brain import MLP_Brain as brain
 from Agent import Agent
 import numpy as np
 

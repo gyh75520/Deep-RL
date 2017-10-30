@@ -1,5 +1,5 @@
 import gym
-from CNN import CNN as brain
+from CNN_Brain import CNN_Brain as brain
 from Agent import Agent
 import numpy as np
 

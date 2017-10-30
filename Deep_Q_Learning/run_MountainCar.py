@@ -1,5 +1,5 @@
 import gym
-from MLP import Neural_Networks as brain
+from MLP_Brain import MLP_Brain as brain
 from Agent import Agent
 import numpy as np
 
@@ -60,5 +60,3 @@ for i_episode in range(10):
 
         observation = observation_
         total_steps += 1
-
-RL.plot_cost()

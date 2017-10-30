@@ -9,9 +9,10 @@ using:
 import tensorflow as tf
 import numpy as np
 import re
+from base_Brain import Brain
 
 
-class CNN:
+class CNN_Brain(Brain):
     def __init__(
         self,
         n_actions,  # 动作数，也就是输出层的神经元数
@@ -33,12 +34,12 @@ class CNN:
         restore=False,  # 是否使用存储的神经网络
         checkpoint_dir='DQN_CNN_Net',  # 存储的dir name
     ):
-        self.n_actions = n_actions
+        # self.n_actions = n_actions
         self.observation_width = observation_width
         self.observation_height = observation_height
         self.observation_depth = observation_depth
         self.filters_per_layer = filters_per_layer
-        self.activation_function = activation_function
+        # self.activation_function = activation_function
         self.kernel_size = kernel_size
         self.conv_strides = conv_strides
         self.padding = padding
@@ -46,28 +47,13 @@ class CNN:
         self.pooling_function = pooling_function
         self.pool_size = pool_size
         self.pool_strides = pool_strides
-        self.lr = learning_rate
-        self.Optimizer = Optimizer
-        self.b_initializer = b_initializer
-        self.output_graph = output_graph
-        self._build_net()
-        self.checkpoint_dir = checkpoint_dir
-
-        self.sess = tf.Session()
-
-        if self.output_graph:
-            if tf.gfile.Exists("graph/"):
-                tf.gfile.DeleteRecursively("graph/")
-            tf.gfile.MakeDirs("graph/")
-            self.merged = tf.summary.merge_all()
-            # terminal 输入 tensorboard --logdir graph
-            self.writer = tf.summary.FileWriter("graph/", self.sess.graph)
-
-        if restore:
-            self.restore()
-        else:
-            self.sess.run(tf.global_variables_initializer())
-        # self.cost_his = []
+        # self.lr = learning_rate
+        # self.Optimizer = Optimizer
+        # self.output_graph = output_graph
+        # self._build_net()
+        # self.checkpoint_dir = checkpoint_dir
+        # self.sess = tf.Session()
+        super(CNN_Brain, self).__init__(n_actions, activation_function, Optimizer, learning_rate,  output_graph, restore, checkpoint_dir)
 
     def _build_net(self):
         def add_conv_and_pool_layer(
@@ -137,25 +123,6 @@ class CNN:
         with tf.variable_scope('target_net'):
             self.q_next = build_layers(self.s_, self.filters_per_layer)
 
-    # 训练 eval 神经网络
-    def train(self, input_s, q_target, action, learn_step_counter):
-        self.sess.run(self.train_op, feed_dict={self.s: input_s, self.action: action, self.q_target: q_target})
-
-    def output_tensorboard(self, input_s, q_target, input_s_, action, learn_step_counter):
-        if self.output_graph:
-            # 每隔100步记录一次
-            if learn_step_counter % 100 == 0:
-                rs = self.sess.run(self.merged, feed_dict={self.s: input_s, self.q_target: q_target, self.s_: input_s_, self.action: action})
-                self.writer.add_summary(rs, learn_step_counter)
-
-    def predict_eval_action(self, input_s):
-        actions_value = self.sess.run(self.q_eval, feed_dict={self.s: input_s})
-        return actions_value
-
-    def predict_target_action(self, input_s):
-        actions_value = self.sess.run(self.q_next, feed_dict={self.s_: input_s})
-        return actions_value
-
     def replace_target_params(self):
         # 将 target_net 的参数 替换成 eval_net 的参数
         rr = re.compile('target_net')
@@ -165,22 +132,6 @@ class CNN:
         e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, rr)
         for t, e in zip(t_params, e_params):
             self.sess.run(tf.assign(t, e))
-
-    def save(self):
-        # 存储神经网络
-        saver = tf.train.Saver()
-        save_path = saver.save(self.sess, self.checkpoint_dir + "/save_net.ckpt")
-        print("\nSave to path: ", save_path)
-
-    def restore(self):
-        # 使用存储的神经网络
-        saver = tf.train.Saver()
-        ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
-        if ckpt and ckpt.model_checkpoint_path:
-            saver.restore(self.sess, ckpt.model_checkpoint_path)  # ckpt.model_checkpoint_path表示模型存储的位置
-            print('\nRestore Sucess')
-        else:
-            raise Exception("Check model_checkpoint_path Exist?")
 
 
 if __name__ == '__main__':
