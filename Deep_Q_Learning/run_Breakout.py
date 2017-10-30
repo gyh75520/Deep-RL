@@ -46,7 +46,7 @@ for i_episode in range(20):
         # the smaller theta and closer to center the better
 
         totalR += env_reward
-        RL.store_memory(observation, action, env_reward, observation_)
+        RL.store_memory(observation, action, env_reward, observation_, done)
 
         if total_steps > 1000:
             RL.learn()

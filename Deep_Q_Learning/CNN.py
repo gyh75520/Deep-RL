@@ -116,13 +116,16 @@ class CNN:
 
         # ------------------ 创建 eval 神经网络, 及时提升参数 ------------------
         self.s = tf.placeholder(tf.float32, [None, self.observation_width, self.observation_height, self.observation_depth], name='s')  # input
-        self.q_target = tf.placeholder(tf.float32, [None, self.n_actions], name='Q_target')  # for calculating loss
+        self.q_target = tf.placeholder(tf.float32, [None], name='Q_target')  # for calculating loss
 
         with tf.variable_scope('eval_net'):
             self.q_eval = build_layers(self.s, self.filters_per_layer)
 
         with tf.variable_scope('loss'):
-            self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
+            self.action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')  # one hot presentatio
+            Q_action = tf.reduce_sum(tf.multiply(self.q_eval, self.action), reduction_indices=1)
+            self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, Q_action))
+            # self.loss = tf.reduce_mean(tf.square(self.q_target - Q_action))
             if self.output_graph:
                 tf.summary.scalar('loss', self.loss)
 
@@ -134,16 +137,15 @@ class CNN:
         with tf.variable_scope('target_net'):
             self.q_next = build_layers(self.s_, self.filters_per_layer)
 
-    def train(self, input_s, q_target, learn_step_counter):
-        # 训练 eval 神经网络
-        _, cost = self.sess.run([self.train_op, self.loss], feed_dict={self.s: input_s, self.q_target: q_target})
-        return cost
+    # 训练 eval 神经网络
+    def train(self, input_s, q_target, action, learn_step_counter):
+        self.sess.run(self.train_op, feed_dict={self.s: input_s, self.action: action, self.q_target: q_target})
 
-    def output_tensorboard(self, input_s, q_target, input_s_, learn_step_counter):
+    def output_tensorboard(self, input_s, q_target, input_s_, action, learn_step_counter):
         if self.output_graph:
             # 每隔100步记录一次
             if learn_step_counter % 100 == 0:
-                rs = self.sess.run(self.merged, feed_dict={self.s: input_s, self.q_target: q_target, self.s_: input_s_})
+                rs = self.sess.run(self.merged, feed_dict={self.s: input_s, self.q_target: q_target, self.s_: input_s_, self.action: action})
                 self.writer.add_summary(rs, learn_step_counter)
 
     def predict_eval_action(self, input_s):
