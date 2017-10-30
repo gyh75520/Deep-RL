@@ -31,7 +31,7 @@ class CNN:
         learning_rate=0.01,  # 学习速率
         output_graph=False,  # 使用 tensorboard
         restore=False,  # 是否使用存储的神经网络
-        checkpoint_dir='My_CNN_Net',  # 存储的dir name
+        checkpoint_dir='DQN_CNN_Net',  # 存储的dir name
     ):
         self.n_actions = n_actions
         self.observation_width = observation_width
