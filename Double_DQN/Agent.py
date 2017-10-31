@@ -9,9 +9,12 @@ using:
 
 import numpy as np
 import random
+import sys
+sys.path.append("..")
+from Deep_Q_Learning.Agent import Agent as agent
 
 
-class Agent:
+class Agent(agent):
     def __init__(
         self,
         brain,  # 使用的神经网络
@@ -25,44 +28,8 @@ class Agent:
         batch_size=32,  # 每次更新时从 memory 里面取多少记忆出来
         replace_target_iter=300,  # 更换 target_net 的步数
     ):
-        self.brain = brain
-        self.observation_space_shape = observation_space_shape
-        self.n_actions = n_actions
-        self.gamma = reward_decay
-        self.MAX_EPSILON = MAX_EPSILON
-        self.MIN_EPSILON = MIN_EPSILON
-        self.LAMBDA = LAMBDA
-        self.epsilon = MAX_EPSILON
-        self.replace_target_iter = replace_target_iter
-        self.memory_size = memory_size
-        self.batch_size = batch_size
-
-        self.cost_his = []
-
-        # 记录学习次数 (用于判断是否更换 target_net 参数)
-        self.learn_step_counter = 0
-        self.reset_epsilon_step = 0
-        # 初始化全 0 记忆 [s, a, r, s_]
-        self.memory = []
-        # self.memory = deque()
-
-    def store_memory(self, s, a, r, s_, done):
-
-        self.memory.append((s, a, r, s_, done))
-        if len(self.memory) > self.memory_size:
-            self.memory.pop(0)
-
-    def choose_action(self, observation):
-        # 增加一个维度[observation]
-        observation = observation[np.newaxis, :]
-        # epsilon greedy 探索
-        if np.random.uniform() < self.epsilon:
-            action = np.random.randint(0, self.n_actions)
-        else:
-            # 选择 q 值最大的 action
-            actions_value = self.brain.predict_eval_action(observation)
-            action = np.argmax(actions_value)
-        return action
+        super(Agent, self).__init__(brain, observation_space_shape, n_actions,  reward_decay, MAX_EPSILON,
+                                    MIN_EPSILON,  LAMBDA, memory_size, batch_size, replace_target_iter)
 
     def learn(self):
         # 每隔 replace_target_iter 步 替换 target_net 参数
@@ -86,21 +53,25 @@ class Agent:
         # self.brain.predict_target_action([s]) 输出 [[x,x]] ravel() 去掉外层list [x,x]
         # q_next = np.array([(q_next_is_end if o[4] is True else self.brain.predict_target_action([o[3]]).ravel()) for o in batch_memory])
         q_next = self.brain.predict_target_action(states_)
+        # ------------------ 这部分和DQN 不一样 ------------------
+        q_eval = self.brain.predict_eval_action(states_)
         '''
         q_target_ = []
         for i in range(0, batch_size):
             q_target_.append(reward[i] + self.gamma * np.max(q_next[i]))
         下面的损失了一些精度
+        q_target = reward + self.gamma * np.max(q_next, axis=1)
         '''
-        # q_target = reward + self.gamma * np.max(q_next, axis=1)
+
         q_target = []
         for i in range(0, batch_size):
             done = batch_memory[i][4]
             if done:
                 q_target.append(reward[i])
             else:
-                q_target.append(reward[i] + self.gamma * np.max(q_next[i]))
-
+                max_index = np.argmax(q_eval[i])
+                q_target.append(reward[i] + self.gamma * q_next[i][max_index])
+        # ------------------------------------------------------
         # One Hot Encoding
         one_hot_action = np.eye(self.n_actions)[action]
         # 训练 eval 神经网络
@@ -112,18 +83,6 @@ class Agent:
         # 逐渐减少 epsilon, 降低行为的随机性
         self.learn_step_counter += 1
         self.epsilon = self.MIN_EPSILON + (self.MAX_EPSILON - self.MIN_EPSILON) * np.exp(-self.LAMBDA * (self.learn_step_counter - self.reset_epsilon_step))
-
-    def reset_epsilon(self):
-        self.reset_epsilon_step = self.learn_step_counter + 1
-
-    # 这个方法已经不用了
-    def plot_cost(self):
-        # cost 曲线
-        import matplotlib.pyplot as plt
-        plt.plot(np.arange(len(self.cost_his)), self.cost_his)
-        plt.ylabel('Cost')
-        plt.xlabel('training steps')
-        plt.show()
 
 
 if __name__ == '__main__':
