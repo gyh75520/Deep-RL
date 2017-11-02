@@ -18,7 +18,7 @@ Brain = brain(
     n_actions=env.action_space.n,
     n_features=env.observation_space.shape[0],
     neurons_per_layer=np.array([8, 4, 8]),
-    learning_rate=0.001,
+    learning_rate=0.01,
     output_graph=True,
     restore=False,
 )
@@ -30,7 +30,7 @@ RL = Agent(
     replace_target_iter=200,
     memory_size=30000,
     MAX_EPSILON=0.9,
-    LAMBDA=0.0001,
+    LAMBDA=0.001,
 )
 
 total_steps = 0
