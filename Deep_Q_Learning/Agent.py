@@ -116,13 +116,18 @@ class Agent:
     def reset_epsilon(self):
         self.reset_epsilon_step = self.learn_step_counter + 1
 
-    # 这个方法已经不用了
-    def plot_cost(self):
+    def statistical_reward(self, reward):
+        if not hasattr(self, 'rewards'):
+            self.rewards = []
+        self.rewards.append(reward)
+        return self.rewards
+
+    def plot_rewards(self):
         # cost 曲线
         import matplotlib.pyplot as plt
-        plt.plot(np.arange(len(self.cost_his)), self.cost_his)
-        plt.ylabel('Cost')
-        plt.xlabel('training steps')
+        plt.plot(np.arange(len(self.rewards)), self.rewards)
+        plt.ylabel('reward')
+        plt.xlabel('episode')
         plt.show()
 
 

@@ -6,7 +6,7 @@ import numpy as np
 
 env = gym.make('CartPole-v0')   # 定义使用 gym 库中的那一个环境
 env = env.unwrapped  # 注释掉的话 每局游戏 reward之和最高200
-
+env.seed(1)
 print(env.action_space.sample())  # 查看这个环境中可用的 action 有多少个
 print(env.observation_space.shape)    # 查看这个环境中可用的 state 的 observation 有多少个
 print(env.observation_space.high)   # 查看 observation 最高取值
@@ -36,7 +36,7 @@ RL = Agent(
 total_steps = 0
 
 
-for i_episode in range(500):
+for i_episode in range(200):
 
     observation = env.reset()
     ep_r = 0
@@ -55,6 +55,7 @@ for i_episode in range(500):
             RL.learn()
 
         if done:
+            RL.statistical_reward(totalR)
             print('episode: ', i_episode,
                   ' epsilon: ', round(RL.epsilon, 2),
                   'total_reward:', totalR)
@@ -63,3 +64,4 @@ for i_episode in range(500):
         observation = observation_
         total_steps += 1
 Brain.save()  # 存储神经网络
+RL.plot_rewards()

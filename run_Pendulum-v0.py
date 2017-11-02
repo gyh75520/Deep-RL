@@ -1,11 +1,12 @@
 # -*- coding: UTF-8 -*-
 import gym
-from MLP_Brain import MLP_Brain as brain
-from Agent import Agent
+from Double_DQN.MLP_Brain import MLP_Brain as brain
+from Double_DQN.Agent import Agent
 import numpy as np
 
-env = gym.make('CartPole-v0')   # 定义使用 gym 库中的那一个环境
-env = env.unwrapped  # 注释掉的话 每局游戏 reward之和最高200
+env = gym.make('Pendulum-v0')   # 定义使用 gym 库中的那一个环境
+# env = env.unwrapped  # 注释掉的话 每局游戏 reward之和最高200
+ACTION_SPACE = 11    # 将原本的连续动作分离成 11 个动作
 
 print(env.action_space.sample())  # 查看这个环境中可用的 action 有多少个
 print(env.observation_space.shape)    # 查看这个环境中可用的 state 的 observation 有多少个
@@ -15,7 +16,7 @@ print(env.observation_space.low)    # 查看 observation 最低取值
 # learning_rate 重要
 # restore 和 MAX_EPSILON 一起调整
 Brain = brain(
-    n_actions=env.action_space.n,
+    n_actions=ACTION_SPACE,
     n_features=env.observation_space.shape[0],
     neurons_per_layer=np.array([8, 4, 8]),
     learning_rate=0.001,
@@ -24,11 +25,11 @@ Brain = brain(
 )
 RL = Agent(
     brain=Brain,
-    n_actions=env.action_space.n,
+    n_actions=ACTION_SPACE,
     observation_space_shape=env.observation_space.shape,
     reward_decay=0.9,
     replace_target_iter=200,
-    memory_size=30000,
+    memory_size=20000,
     MAX_EPSILON=0.9,
     LAMBDA=0.0001,
 )
@@ -42,12 +43,13 @@ for i_episode in range(500):
     ep_r = 0
     totalR = 0
     while True:
-        # env.render()
+        env.render()
 
         action = RL.choose_action(observation)
-
-        observation_, reward, done, info = env.step(action)
+        f_action = (action - (ACTION_SPACE - 1) / 2) / ((ACTION_SPACE - 1) / 4)
+        observation_, reward, done, info = env.step(np.array([f_action]))
         totalR += reward
+        reward /= 10
         RL.store_memory(observation, action, reward, observation_, done)
 
         ep_r += reward

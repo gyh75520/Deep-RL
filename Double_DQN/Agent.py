@@ -10,7 +10,7 @@ using:
 import numpy as np
 import random
 import sys
-sys.path.append("..")
+# sys.path.append("..")
 from Deep_Q_Learning.Agent import Agent as agent
 
 
