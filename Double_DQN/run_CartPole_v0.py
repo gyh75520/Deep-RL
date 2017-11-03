@@ -27,7 +27,7 @@ RL = Agent(
     n_actions=env.action_space.n,
     observation_space_shape=env.observation_space.shape,
     reward_decay=0.9,
-    replace_target_iter=1000,
+    replace_target_iter=200,
     memory_size=100000,
     batch_size=64,
     MAX_EPSILON=0.9,
@@ -37,7 +37,7 @@ RL = Agent(
 total_steps = 0
 
 
-for i_episode in range(1000):
+for i_episode in range(2500):
 
     observation = env.reset()
     ep_r = 0
@@ -64,5 +64,5 @@ for i_episode in range(1000):
 
         observation = observation_
         total_steps += 1
-Brain.save()  # 存储神经网络
+# Brain.save()  # 存储神经网络
 RL.plot_rewards()

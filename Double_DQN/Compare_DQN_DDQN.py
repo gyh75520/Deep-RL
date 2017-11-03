@@ -15,9 +15,9 @@ def init_DQN():
     Brain = brain(
         n_actions=env.action_space.n,
         n_features=env.observation_space.shape[0],
-        neurons_per_layer=np.array([8, 4, 8]),
-        learning_rate=0.01,
-        output_graph=True,
+        neurons_per_layer=np.array([64]),
+        learning_rate=0.00025,
+        output_graph=False,
         restore=False,
     )
     DQN_agent = DQN_Agent(
@@ -26,8 +26,9 @@ def init_DQN():
         observation_space_shape=env.observation_space.shape,
         reward_decay=0.9,
         replace_target_iter=200,
-        memory_size=30000,
+        memory_size=100000,
         MAX_EPSILON=0.9,
+        batch_size=64,
         LAMBDA=0.0001,
     )
     return DQN_agent
@@ -37,9 +38,9 @@ def init_DDQN():
     Brain = brain(
         n_actions=env.action_space.n,
         n_features=env.observation_space.shape[0],
-        neurons_per_layer=np.array([8, 4, 8]),
-        learning_rate=0.01,
-        output_graph=True,
+        neurons_per_layer=np.array([64]),
+        learning_rate=0.00025,
+        output_graph=False,
         restore=False,
     )
     DDQN_agent = DDQN_Agent(
@@ -48,8 +49,9 @@ def init_DDQN():
         observation_space_shape=env.observation_space.shape,
         reward_decay=0.9,
         replace_target_iter=200,
-        memory_size=30000,
+        memory_size=100000,
         MAX_EPSILON=0.9,
+        batch_size=64,
         LAMBDA=0.001,
     )
     return DDQN_agent
@@ -88,7 +90,7 @@ def run(Agent, episode_Num):
 
 
 def compare():
-    episode_Num = 240
+    episode_Num = 500
 
     DDQN_graph = tf.Graph()
     with DDQN_graph.as_default():
