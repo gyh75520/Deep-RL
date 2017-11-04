@@ -18,9 +18,9 @@ print(env.observation_space.low)    # 查看 observation 最低取值
 Brain = brain(
     n_actions=ACTION_SPACE,
     n_features=env.observation_space.shape[0],
-    neurons_per_layer=np.array([8, 4, 8]),
-    learning_rate=0.001,
-    output_graph=True,
+    neurons_per_layer=np.array([64]),
+    learning_rate=0.00025,
+    output_graph=False,
     restore=False,
 )
 RL = Agent(
@@ -29,8 +29,9 @@ RL = Agent(
     observation_space_shape=env.observation_space.shape,
     reward_decay=0.9,
     replace_target_iter=200,
-    memory_size=20000,
+    memory_size=100000,
     MAX_EPSILON=0.9,
+    batch_size=64,
     LAMBDA=0.0001,
 )
 

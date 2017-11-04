@@ -1,38 +1,44 @@
+# -*- coding: UTF-8 -*-
 import gym
 from MLP_Brain import MLP_Brain as brain
 from Agent import Agent
 import numpy as np
 
+env = gym.make('MountainCar-v0')   # 定义使用 gym 库中的那一个环境
+env = env.unwrapped  # 注释掉的话 每局游戏 reward之和最高200
+env.seed(1)
+print(env.action_space.sample())  # 查看这个环境中可用的 action 有多少个
+print(env.observation_space.shape)    # 查看这个环境中可用的 state 的 observation 有多少个
+print(env.observation_space.high)   # 查看 observation 最高取值
+print(env.observation_space.low)    # 查看 observation 最低取值
 
-env = gym.make('MountainCar-v0')
-env = env.unwrapped
-
-print(env.action_space)
-print(env.observation_space)
-print(env.observation_space.high)
-print(env.observation_space.low)
-
+# learning_rate 重要
+# restore 和 MAX_EPSILON 一起调整
 Brain = brain(
     n_actions=env.action_space.n,
     n_features=env.observation_space.shape[0],
-    learning_rate=0.01,
-    neurons_per_layer=np.array([4, 2]),
-    output_graph=True
+    neurons_per_layer=np.array([64]),
+    learning_rate=0.00025,
+    output_graph=True,
+    restore=False,
 )
 RL = Agent(
     brain=Brain,
     n_actions=env.action_space.n,
     observation_space_shape=env.observation_space.shape,
     reward_decay=0.9,
-    replace_target_iter=100,
-    memory_size=2000,
+    replace_target_iter=1000,
+    memory_size=100000,
+    batch_size=64,
+    MAX_EPSILON=0.9,
+    LAMBDA=0.001,
 )
-
 
 total_steps = 0
 
+q_change = [[-0.15955113,  0.]]
 
-for i_episode in range(10):
+for i_episode in range(3):
 
     observation = env.reset()
     ep_r = 0
@@ -43,20 +49,21 @@ for i_episode in range(10):
         action = RL.choose_action(observation)
 
         observation_, reward, done, info = env.step(action)
-
         totalR += reward
-
         RL.store_memory(observation, action, reward, observation_, done)
 
-        if total_steps > 1000:
+        ep_r += reward
+        if total_steps > 50:
             RL.learn()
 
         if done:
+            RL.statistical_reward(totalR, q_change, 1)
             print('episode: ', i_episode,
-                  'ep_r: ', round(ep_r, 2),
                   ' epsilon: ', round(RL.epsilon, 2),
                   'total_reward:', totalR)
             break
 
         observation = observation_
         total_steps += 1
+# Brain.save()  # 存储神经网络
+RL.plot_rewards()

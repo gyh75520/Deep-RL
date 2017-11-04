@@ -27,7 +27,7 @@ RL = Agent(
     n_actions=env.action_space.n,
     observation_space_shape=env.observation_space.shape,
     reward_decay=0.9,
-    replace_target_iter=200,
+    replace_target_iter=1000,
     memory_size=100000,
     batch_size=64,
     MAX_EPSILON=0.9,
@@ -36,10 +36,13 @@ RL = Agent(
 
 total_steps = 0
 
+q_change = [[0.03073904, 0.00145001, -0.03088818, -0.03131252]]
 
-for i_episode in range(2500):
+for i_episode in range(1200):
 
     observation = env.reset()
+    # print('observation', observation)
+
     ep_r = 0
     totalR = 0
     while True:
@@ -56,7 +59,7 @@ for i_episode in range(2500):
             RL.learn()
 
         if done:
-            RL.statistical_reward(totalR)
+            RL.statistical_reward(totalR, q_change, 1)
             print('episode: ', i_episode,
                   ' epsilon: ', round(RL.epsilon, 2),
                   'total_reward:', totalR)

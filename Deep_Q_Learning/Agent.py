@@ -116,19 +116,36 @@ class Agent:
     def reset_epsilon(self):
         self.reset_epsilon_step = self.learn_step_counter + 1
 
-    def statistical_reward(self, reward):
+    def statistical_reward(self, reward, states=None, action=None):
         if not hasattr(self, 'rewards'):
             self.rewards = []
         self.rewards.append(reward)
+
+        if states is not None:
+            if not hasattr(self, 'q_change_list'):
+                self.q_change_list = []
+            q_value = self.brain.predict_eval_action(states)
+            print('q_change', q_value)
+            self.q_change_list.append(q_value[0][action])
+            return self.rewards, self.q_change_list
         return self.rewards
 
     def plot_rewards(self):
-        # cost 曲线
         import matplotlib.pyplot as plt
-        plt.plot(np.arange(len(self.rewards)), self.rewards)
-        plt.ylabel('reward')
-        plt.xlabel('episode')
-        plt.show()
+        if not hasattr(self, 'q_change_list'):
+            plt.plot(np.arange(len(self.rewards)), self.rewards)
+            plt.ylabel('reward')
+            plt.xlabel('episode')
+            plt.show()
+        else:
+            # 出对比图
+            plt.plot(np.arange(len(self.rewards)), self.rewards, c='r', label='Rewards')
+            plt.plot(np.arange(len(self.q_change_list)), self.q_change_list, c='b', label='Q eval')
+            plt.legend(loc='best')
+            plt.ylabel('Q eval')
+            plt.xlabel('episode')
+            plt.grid()
+            plt.show()
 
 
 if __name__ == '__main__':
