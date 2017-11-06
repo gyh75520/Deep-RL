@@ -116,11 +116,12 @@ class Agent:
     def reset_epsilon(self):
         self.reset_epsilon_step = self.learn_step_counter + 1
 
-    def statistical_reward(self, reward, states=None, action=None):
+    def statistical_values(self, reward, states=None, action=None):
         if not hasattr(self, 'rewards'):
             self.rewards = []
         self.rewards.append(reward)
 
+        # 是否要画 q 值图
         if states is not None:
             if not hasattr(self, 'q_change_list'):
                 self.q_change_list = []
@@ -128,10 +129,12 @@ class Agent:
             print('q_change', q_value)
             self.q_change_list.append(q_value[0][action])
             return self.rewards, self.q_change_list
+
         return self.rewards
 
-    def plot_rewards(self):
+    def plot_values(self):
         import matplotlib.pyplot as plt
+        from matplotlib.ticker import MultipleLocator
         if not hasattr(self, 'q_change_list'):
             plt.plot(np.arange(len(self.rewards)), self.rewards)
             plt.ylabel('reward')
@@ -139,13 +142,23 @@ class Agent:
             plt.show()
         else:
             # 出对比图
+            ax = plt.subplot(111)  # 注意:一般都在ax中设置,不再plot中设置
+            # 设置主刻度标签的位置,标签文本的格式
+            # xmajorLocator = MultipleLocator(20)  # 将x主刻度标签设置为20的倍数
+            # ymajorLocator = MultipleLocator(10)  # 将y轴主刻度标签设置为10的倍数
+            # ax.xaxis.set_major_locator(xmajorLocator)
+            # ax.yaxis.set_major_locator(ymajorLocator)
             plt.plot(np.arange(len(self.rewards)), self.rewards, c='r', label='Rewards')
             plt.plot(np.arange(len(self.q_change_list)), self.q_change_list, c='b', label='Q eval')
             plt.legend(loc='best')
-            plt.ylabel('Q eval')
             plt.xlabel('episode')
             plt.grid()
             plt.show()
+            # plt.subplot(121)
+            # plt.plot(np.arange(len(self.rewards)), self.rewards, c='r', label='Rewards')
+            # plt.subplot(122)
+            # plt.plot(np.arange(len(self.q_change_list)), self.q_change_list, c='b', label='Q eval')
+            # plt.show()
 
 
 if __name__ == '__main__':
