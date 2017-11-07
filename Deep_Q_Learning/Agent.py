@@ -41,6 +41,7 @@ class Agent:
 
         # 记录学习次数 (用于判断是否更换 target_net 参数)
         self.learn_step_counter = 0
+        self.choose_step_counter = 0
         self.reset_epsilon_step = 0
         # 初始化全 0 记忆 [s, a, r, s_]
         self.memory = []
@@ -62,6 +63,8 @@ class Agent:
             # 选择 q 值最大的 action
             actions_value = self.brain.predict_eval_action(observation)
             action = np.argmax(actions_value)
+        self.choose_step_counter += 1
+        self.epsilon = self.MIN_EPSILON + (self.MAX_EPSILON - self.MIN_EPSILON) * np.exp(-self.LAMBDA * (self.choose_step_counter - self.reset_epsilon_step))
         return action
 
     def learn(self):
@@ -111,10 +114,10 @@ class Agent:
 
         # 逐渐减少 epsilon, 降低行为的随机性
         self.learn_step_counter += 1
-        self.epsilon = self.MIN_EPSILON + (self.MAX_EPSILON - self.MIN_EPSILON) * np.exp(-self.LAMBDA * (self.learn_step_counter - self.reset_epsilon_step))
+        # self.epsilon = self.MIN_EPSILON + (self.MAX_EPSILON - self.MIN_EPSILON) * np.exp(-self.LAMBDA * (self.learn_step_counter - self.reset_epsilon_step))
 
     def reset_epsilon(self):
-        self.reset_epsilon_step = self.learn_step_counter + 1
+        self.reset_epsilon_step = self.choose_step_counter + 1
 
     def statistical_values(self, reward, states=None, action=None):
         if not hasattr(self, 'rewards'):

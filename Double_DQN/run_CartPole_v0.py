@@ -79,4 +79,4 @@ def run_game(episode, plt_q=False):
     RL.plot_values()
 
 
-run_game(100, True)
+run_game(1000, True)

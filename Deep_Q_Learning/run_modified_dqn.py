@@ -31,19 +31,19 @@ RL = Agent(
     memory_size=100000,
     batch_size=64,
     MAX_EPSILON=0.9,
-    LAMBDA=0.001,
+    LAMBDA=0.0001,
 )
 
 total_steps = 0
 
 
-for i_episode in range(2000):
+for i_episode in range(900):
 
     observation = env.reset()
-    ep_r = 0
+
     totalR = 0
     while True:
-        env.render()
+        # env.render()
 
         action = RL.choose_action(observation)
 
@@ -51,9 +51,7 @@ for i_episode in range(2000):
         totalR += reward
         RL.store_memory(observation, action, reward, observation_, done)
 
-        ep_r += reward
-
-        if done:
+        if done or totalR > 600:
             b = RL.batch_size
             m = len(RL.memory)
             print('len(RL.memory)', m)
@@ -67,12 +65,12 @@ for i_episode in range(2000):
             else:
                 print('-------------------------------------------------------------------------------------------------')
                 RL.learn()
-            RL.statistical_reward(totalR)
+            RL.statistical_values(totalR)
             print('episode: ', i_episode,
-                  ' epsilon: ', round(RL.epsilon, 2),
+                  ' epsilon: ', RL.epsilon,
                   'total_reward:', totalR)
             break
 
         observation = observation_
         total_steps += 1
-RL.plot_rewards()
+RL.plot_values()
