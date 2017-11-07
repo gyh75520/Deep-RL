@@ -134,7 +134,7 @@ class Agent:
 
     def plot_values(self):
         import matplotlib.pyplot as plt
-        from matplotlib.ticker import MultipleLocator
+        # from matplotlib.ticker import MultipleLocator
         if not hasattr(self, 'q_change_list'):
             plt.plot(np.arange(len(self.rewards)), self.rewards)
             plt.ylabel('reward')
@@ -142,7 +142,7 @@ class Agent:
             plt.show()
         else:
             # 出对比图
-            ax = plt.subplot(111)  # 注意:一般都在ax中设置,不再plot中设置
+            # ax = plt.subplot(111)  # 注意:一般都在ax中设置,不再plot中设置
             # 设置主刻度标签的位置,标签文本的格式
             # xmajorLocator = MultipleLocator(20)  # 将x主刻度标签设置为20的倍数
             # ymajorLocator = MultipleLocator(10)  # 将y轴主刻度标签设置为10的倍数
