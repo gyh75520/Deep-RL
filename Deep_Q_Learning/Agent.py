@@ -111,10 +111,7 @@ class Agent:
 
         # brain 中 的 output_graph 需要为 True
         self.brain.output_tensorboard(states, q_target, states_, one_hot_action, self.learn_step_counter)
-
-        # 逐渐减少 epsilon, 降低行为的随机性
         self.learn_step_counter += 1
-        # self.epsilon = self.MIN_EPSILON + (self.MAX_EPSILON - self.MIN_EPSILON) * np.exp(-self.LAMBDA * (self.learn_step_counter - self.reset_epsilon_step))
 
     def reset_epsilon(self):
         self.reset_epsilon_step = self.choose_step_counter + 1
