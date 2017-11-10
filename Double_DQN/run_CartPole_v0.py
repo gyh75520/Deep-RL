@@ -25,12 +25,12 @@ RL = Agent(
     brain=Brain,
     n_actions=env.action_space.n,
     observation_space_shape=env.observation_space.shape,
-    reward_decay=0.95,
+    reward_decay=0.9,
     replace_target_iter=1000,
     memory_size=100000,
     batch_size=64,
     MAX_EPSILON=0.9,
-    LAMBDA=0.001,
+    LAMBDA=0.0001,
 )
 
 
@@ -49,7 +49,7 @@ def set_memory_with_random():
 
 
 def run_game(episode, plt_q=False):
-    set_memory_with_random()
+    # set_memory_with_random()
     total_steps = 0
     # q_change = [[0.03073904, 0.00145001, -0.03088818, -0.03131252]]
     for i_episode in range(episode):

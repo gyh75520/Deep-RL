@@ -62,6 +62,7 @@ class Agent(agent):
         下面的损失了一些精度
         q_target = reward + self.gamma * np.max(q_next, axis=1)
         '''
+        q_sum = (q_next + q_eval) / 2.0
 
         q_target = []
         for i in range(0, batch_size):
@@ -69,7 +70,7 @@ class Agent(agent):
             if done:
                 q_target.append(reward[i])
             else:
-                max_index = np.argmax(q_eval[i])
+                max_index = np.argmax(q_sum[i])
                 q_target.append(reward[i] + self.gamma * q_next[i][max_index])
         # ------------------------------------------------------
         # One Hot Encoding
