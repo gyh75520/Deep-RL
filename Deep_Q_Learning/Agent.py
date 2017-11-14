@@ -132,9 +132,10 @@ class Agent:
 
         return self.rewards
 
-    def plot_values(self):
+    def plot_values(self, title='values'):
         import matplotlib.pyplot as plt
         # from matplotlib.ticker import MultipleLocator
+        plt.title(title)
         if not hasattr(self, 'q_change_list'):
             plt.plot(np.arange(len(self.rewards)), self.rewards)
             plt.ylabel('reward')

@@ -1,8 +1,9 @@
 # -*- coding: UTF-8 -*-
 import gym
 from MLP_Brain import MLP_Brain as brain
-from Agent import Agent
+from Modified_Agent import Agent
 import numpy as np
+import math
 env = gym.make('CartPole-v0')   # 定义使用 gym 库中的那一个环境
 env = env.unwrapped  # 注释掉的话 每局游戏 reward之和最高200
 env.seed(1)
@@ -18,7 +19,7 @@ Brain = brain(
     n_features=env.observation_space.shape[0],
     neurons_per_layer=np.array([64]),
     learning_rate=0.00025,
-    output_graph=True,
+    output_graph=False,
     restore=False,
 )
 RL = Agent(
@@ -34,49 +35,49 @@ RL = Agent(
 )
 
 
-def set_memory_with_random():
-    while len(RL.memory) < RL.memory_size:
-        observation = env.reset()
-        while True:
-            # env.render()
-            action = RL.choose_action(observation)
-            observation_, reward, done, info = env.step(action)
-            RL.store_memory(observation, action, reward, observation_, done)
-            if done:
-                break
-            observation = observation_
-    print('set_memory_with_random successful, memory_size:', len(RL.memory))
-
-
-def run_game(episode, plt_q=False):
-    set_memory_with_random()
+def run_game():
     total_steps = 0
-    # q_change = [[0.03073904, 0.00145001, -0.03088818, -0.03131252]]
-    for i_episode in range(episode):
+    for i_episode in range(1, 1001):
+
         observation = env.reset()
-        if plt_q:
-            q_change = [observation]
-            action_change = RL.choose_action(observation)
+
         totalR = 0
         while True:
             # env.render()
+
             action = RL.choose_action(observation)
+
             observation_, reward, done, info = env.step(action)
             totalR += reward
             RL.store_memory(observation, action, reward, observation_, done)
-            RL.learn()
+
+            if totalR > 100000:
+                return 0
             if done:
-                print('episode: ', i_episode, ' epsilon: ', RL.epsilon, 'total_reward:', totalR)
-                if plt_q:
-                    RL.statistical_values(totalR, q_change, action_change)
-                else:
-                    RL.statistical_values(totalR)
+                if i_episode % 10 == 0:
+                    RL.set_y_true()
+                    b = RL.batch_size
+                    m = len(RL.memory)
+                    print('len(RL.memory)', m)
+                    if b < m / 2:
+                        print('----------------------------------------------------------b<M---------------------------------------')
+                        # n = m * m / b
+                        # print('n:', n)
+                        for i in range(int(m / 2) + b):
+                            RL.learn()
+                        RL.memory = []
+                    else:
+                        print('-------------------------------------------------------------------------------------------------')
+                        # RL.learn()
+                RL.statistical_values(totalR)
+                print('episode: ', i_episode,
+                      ' epsilon: ', RL.epsilon,
+                      'total_reward:', totalR)
                 break
+
             observation = observation_
             total_steps += 1
 
-    # Brain.save()  # 存储神经网络
-    RL.plot_values()
 
-
-run_game(400, True)
+run_game()
+RL.plot_values('back_y version:10 episode\'s memory,if 2 * b < m: RL.learn() m/2 + b times')
