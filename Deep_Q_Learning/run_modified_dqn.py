@@ -3,7 +3,7 @@ import gym
 from MLP_Brain import MLP_Brain as brain
 from Agent import Agent
 import numpy as np
-
+import math
 env = gym.make('CartPole-v0')   # 定义使用 gym 库中的那一个环境
 env = env.unwrapped  # 注释掉的话 每局游戏 reward之和最高200
 env.seed(1)
@@ -37,7 +37,7 @@ RL = Agent(
 total_steps = 0
 
 
-for i_episode in range(900):
+for i_episode in range(1, 900):
 
     observation = env.reset()
 
@@ -52,19 +52,20 @@ for i_episode in range(900):
         RL.store_memory(observation, action, reward, observation_, done)
 
         if done or totalR > 600:
-            b = RL.batch_size
-            m = len(RL.memory)
-            print('len(RL.memory)', m)
-            if b < m:
-                print('----------------------------------------------------------b<M---------------------------------------')
-                n = m * m / b
-                print('n:', n)
-                for i in range(int(n)):
-                    RL.learn()
-                RL.memory = []
-            else:
-                print('-------------------------------------------------------------------------------------------------')
-                RL.learn()
+            if i_episode % 5 == 0:
+                b = RL.batch_size
+                m = len(RL.memory)
+                print('len(RL.memory)', m)
+                if b < m:
+                    print('----------------------------------------------------------b<M---------------------------------------')
+                    n = m * m / (math.log(m) * b)
+                    print('n:', n)
+                    for i in range(int(n)):
+                        RL.learn()
+                    RL.memory = []
+                else:
+                    print('-------------------------------------------------------------------------------------------------')
+                    # RL.learn()
             RL.statistical_values(totalR)
             print('episode: ', i_episode,
                   ' epsilon: ', RL.epsilon,
@@ -73,4 +74,4 @@ for i_episode in range(900):
 
         observation = observation_
         total_steps += 1
-RL.plot_values()
+RL.plot_values('5 episode\'s memory version:RL.learn() m*m/(math.log(m)*b) times')
