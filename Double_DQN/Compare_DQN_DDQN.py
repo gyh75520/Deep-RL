@@ -76,7 +76,7 @@ def run(Agent, episode_Num):
                 Agent.learn()
 
             if done:
-                statistical_reward = Agent.statistical_reward(totalR)
+                statistical_reward = Agent.statistical_values(totalR)
                 print('episode: ', i_episode,
                       ' epsilon: ', round(Agent.epsilon, 2),
                       'total_reward:', totalR)
@@ -88,7 +88,7 @@ def run(Agent, episode_Num):
 
 
 def compare():
-    episode_Num = 400
+    episode_Num = 40
 
     DDQN_graph = tf.Graph()
     with DDQN_graph.as_default():
