@@ -88,12 +88,12 @@ def run(Agent, episode_Num):
 
 
 def compare():
-    episode_Num = 40
+    episode_Num = 10
 
     DDQN_graph = tf.Graph()
     with DDQN_graph.as_default():
-        Agent = init_DDQN()
-        DDQN_statistical_reward = run(Agent, episode_Num)
+        Agent_DD = init_DDQN()
+        DDQN_statistical_reward = run(Agent_DD, episode_Num)
     DQN_graph = tf.Graph()
     with DQN_graph.as_default():
         Agent = init_DQN()

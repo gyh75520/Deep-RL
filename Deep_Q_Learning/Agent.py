@@ -89,6 +89,7 @@ class Agent:
         # self.brain.predict_target_action([s]) 输出 [[x,x]] ravel() 去掉外层list [x,x]
         # q_next = np.array([(q_next_is_end if o[4] is True else self.brain.predict_target_action([o[3]]).ravel()) for o in batch_memory])
         q_next = self.brain.predict_target_action(states_)
+        # q_next = self.brain.predict_eval_action(states_)
         '''
         q_target_ = []
         for i in range(0, batch_size):
@@ -135,7 +136,7 @@ class Agent:
     def plot_values(self, title='values'):
         import matplotlib.pyplot as plt
         # from matplotlib.ticker import MultipleLocator
-        plt.title(title)
+        # plt.title(title)
         if not hasattr(self, 'q_change_list'):
             plt.plot(np.arange(len(self.rewards)), self.rewards)
             plt.ylabel('reward')

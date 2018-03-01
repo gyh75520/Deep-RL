@@ -44,7 +44,7 @@ for i_episode in range(3):
     ep_r = 0
     totalR = 0
     while True:
-        env.render()
+        # env.render()
 
         action = RL.choose_action(observation)
 
@@ -55,9 +55,9 @@ for i_episode in range(3):
         ep_r += reward
         if total_steps > 50:
             RL.learn()
-
+        RL.statistical_values(0, q_change, 1)
         if done:
-            RL.statistical_reward(totalR, q_change, 1)
+            # RL.statistical_values(totalR, q_change, 1)
             print('episode: ', i_episode,
                   ' epsilon: ', round(RL.epsilon, 2),
                   'total_reward:', totalR)
@@ -66,4 +66,4 @@ for i_episode in range(3):
         observation = observation_
         total_steps += 1
 # Brain.save()  # 存储神经网络
-RL.plot_rewards()
+RL.plot_values()
