@@ -16,15 +16,15 @@ Brain = brain(n_actions=env.action_space.n,
               observation_width=env.observation_space.shape[0],
               observation_height=env.observation_space.shape[1],
               observation_depth=env.observation_space.shape[2],
-              filters_per_layer=np.array([4, 8]),
-              output_graph=True)
+              filters_per_layer=np.array([32, 64]),
+              output_graph=False)
 RL = Agent(
     brain=Brain,
     n_actions=env.action_space.n,
     observation_space_shape=env.observation_space.shape,
     reward_decay=0.9,
-    replace_target_iter=100,
-    memory_size=2000,
+    replace_target_iter=1000,
+    memory_size=20000,
     batch_size=64,
 )
 
@@ -48,7 +48,7 @@ for i_episode in range(20):
         totalR += env_reward
         RL.store_memory(observation, action, env_reward, observation_, done)
 
-        if total_steps > 1000:
+        if total_steps > 100:
             RL.learn()
         if done:
             print('episode: ', i_episode,
