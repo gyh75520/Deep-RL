@@ -19,17 +19,17 @@ class CNN_Brain(Brain):
         observation_width,  # 图片的width
         observation_height,  # 图片的height
         observation_depth,  # 图片的depth
-        filters_per_layer=np.array([32, 64]),  # Conv_and_Pool_Layer i 层中 卷积的filters
+        filters_per_layer=np.array([32, 64, 64]),  # Conv_and_Pool_Layer i 层中 卷积的filters
         activation_function=tf.nn.relu,  # 激活函数
-        kernel_size=(5, 5),  # 卷积核的size
-        conv_strides=(1, 1),  # 卷积层的strides
-        padding='same',  # same or valid
+        kernel_size_per_layer=[(8, 8), (4, 4), (3, 3)],  # 卷积核的size
+        conv_strides_per_layer=[(4, 4), (2, 2), (1, 1)],  # 卷积层的strides
+        padding='valid',  # same or valid
         b_initializer=tf.zeros_initializer(),  # tf.constant_initializer(0.1)
         pooling_function=tf.layers.max_pooling2d,  # max_pooling2d or average_pooling2d
         pool_size=(2, 2),  # pooling的size
         pool_strides=(2, 2),  # pooling的strides
-        Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.RMSPropOptimizer..
-        learning_rate=0.01,  # 学习速率
+        Optimizer=tf.train.RMSPropOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.RMSPropOptimizer..
+        learning_rate=0.00025,  # 学习速率
         output_graph=False,  # 使用 tensorboard
         restore=False,  # 是否使用存储的神经网络
         checkpoint_dir='DQN_CNN_Net',  # 存储的dir name
@@ -40,8 +40,8 @@ class CNN_Brain(Brain):
         self.observation_depth = observation_depth
         self.filters_per_layer = filters_per_layer
         # self.activation_function = activation_function
-        self.kernel_size = kernel_size
-        self.conv_strides = conv_strides
+        self.kernel_size_per_layer = kernel_size_per_layer
+        self.conv_strides_per_layer = conv_strides_per_layer
         self.padding = padding
         self.b_initializer = b_initializer
         self.pooling_function = pooling_function
@@ -63,7 +63,7 @@ class CNN_Brain(Brain):
             filters=32,
             kernel_size=(5, 5),  # 卷积核的size
             conv_strides=(1, 1),  # 卷积层的strides
-            padding='same',  # same or valid
+            padding='valid',  # same or valid
             pooling_function=tf.layers.max_pooling2d,  # max_pooling2d or average_pooling2d
             pool_size=(2, 2),  # pooling的size
             pool_strides=(2, 2),  # pooling的strides
@@ -77,21 +77,23 @@ class CNN_Brain(Brain):
                 pool = pooling_function(inputs=conv, pool_size=pool_size, strides=pool_strides, name=pool_name)
             return pool
 
-        def build_layers(inputs, filters_per_layer):
+        def build_layers(inputs, filters_per_layer, kernel_size_per_layer, conv_strides_per_layer):
             filters_per_layer = filters_per_layer.ravel()  # 平坦化数组
             layer_numbers = filters_per_layer.shape[0]
             l_range = range(0, layer_numbers)
             for l in l_range:  # 构造卷积和池化层
                 filters = filters_per_layer[l]
+                kernel_size = kernel_size_per_layer[l]
+                conv_strides = conv_strides_per_layer[l]
                 inputs = add_conv_and_pool_layer(inputs=inputs, n_layer=l + 1, activation_function=self.activation_function,
-                                                 filters=filters, kernel_size=self.kernel_size, conv_strides=self.conv_strides,
+                                                 filters=filters, kernel_size=kernel_size, conv_strides=conv_strides,
                                                  padding=self.padding, pooling_function=self.pooling_function,
                                                  pool_size=self.pool_size, pool_strides=self.pool_strides)
 
             # 构造全连接层
             flat_size = inputs.shape[1] * inputs.shape[2] * inputs.shape[3]
             inputs_flat = tf.reshape(inputs, [-1, int(flat_size)])
-            dense = tf.layers.dense(inputs=inputs_flat, units=24, activation=tf.nn.relu)
+            dense = tf.layers.dense(inputs=inputs_flat, units=512, activation=tf.nn.relu)
 
             # 添加 dropout 处理过拟合
             dropout = tf.layers.dropout(inputs=dense, rate=0.4)
@@ -105,7 +107,7 @@ class CNN_Brain(Brain):
         self.q_target = tf.placeholder(tf.float32, [None], name='Q_target')  # for calculating loss
 
         with tf.variable_scope('eval_net'):
-            self.q_eval = build_layers(self.s, self.filters_per_layer)
+            self.q_eval = build_layers(self.s, self.filters_per_layer, self.kernel_size_per_layer, self.conv_strides_per_layer)
 
         with tf.variable_scope('loss'):
             self.action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')  # one hot presentatio
@@ -116,12 +118,12 @@ class CNN_Brain(Brain):
                 tf.summary.scalar('loss', self.loss)
 
         with tf.variable_scope('train'):
-            self.train_op = self.Optimizer(self.lr).minimize(self.loss)
+            self.train_op = self.Optimizer(learning_rate=self.lr, momentum=0.95).minimize(self.loss)
 
         # ------------------ 创建 target 神经网络, 提供 target Q ------------------
         self.s_ = tf.placeholder(tf.float32, [None, self.observation_width, self.observation_height, self.observation_depth], name='s_')
         with tf.variable_scope('target_net'):
-            self.q_next = build_layers(self.s_, self.filters_per_layer)
+            self.q_next = build_layers(self.s_, self.filters_per_layer, self.kernel_size_per_layer, self.conv_strides_per_layer)
 
     def replace_target_params(self):
         # 将 target_net 的参数 替换成 eval_net 的参数
