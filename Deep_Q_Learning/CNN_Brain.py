@@ -125,8 +125,18 @@ class CNN_Brain(Brain):
         with tf.variable_scope('target_net'):
             self.q_next = build_layers(self.s_, self.filters_per_layer, self.kernel_size_per_layer, self.conv_strides_per_layer)
 
+        # ------------------ replace_target_params op ------------------
+        self.update_target = []
+        t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, rr)
+        print(t_params)
+        e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, rr)
+        print(e_params)
+        for t, e in zip(t_params, e_params):
+            self.update_target.append(tf.assign(t, e))
+
     def replace_target_params(self):
         # 将 target_net 的参数 替换成 eval_net 的参数
+        '''
         rr = re.compile('target_net')
         # print(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
         t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, rr)
@@ -134,6 +144,9 @@ class CNN_Brain(Brain):
         e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, rr)
         for t, e in zip(t_params, e_params):
             self.sess.run(tf.assign(t, e))
+        '''
+        # 改成 op 速度更快
+        self.sess.run(self.update_target)
 
 
 if __name__ == '__main__':

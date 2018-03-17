@@ -105,12 +105,23 @@ class MLP_Brain(Brain):
             c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
             self.q_next = build_layers(self.s_, self.neurons_per_layer, c_names)
 
+        # ------------------ replace_target_params op ------------------
+        self.update_target = []
+        t_params = tf.get_collection('target_net_params')
+        e_params = tf.get_collection('eval_net_params')
+        for t, e in zip(t_params, e_params):
+            self.update_target.append(tf.assign(t, e))
+
     def replace_target_params(self):
         # 将 target_net 的参数 替换成 eval_net 的参数
+        '''
         t_params = tf.get_collection('target_net_params')
         e_params = tf.get_collection('eval_net_params')
         for t, e in zip(t_params, e_params):
             self.sess.run(tf.assign(t, e))
+        '''
+        # 改成 op 速度更快
+        self.sess.run(self.update_target)
 
 
 if __name__ == '__main__':

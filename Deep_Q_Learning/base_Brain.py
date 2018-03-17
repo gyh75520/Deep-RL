@@ -42,6 +42,7 @@ class Brain:
             self.restore()
         else:
             self.sess.run(tf.global_variables_initializer())
+            self.sess.run(self.update_target)  # is this necessary?
         # self.cost_his = []
 
     def _build_net(self):
