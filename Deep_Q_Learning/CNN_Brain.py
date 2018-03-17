@@ -74,8 +74,8 @@ class CNN_Brain(Brain):
                 pool_name = 'Pool%s' % n_layer
                 conv = tf.layers.conv2d(inputs=inputs, filters=filters, kernel_size=kernel_size, padding=padding, strides=conv_strides,
                                         activation=activation_function, bias_initializer=self.b_initializer, name=conv_name)
-                pool = pooling_function(inputs=conv, pool_size=pool_size, strides=pool_strides, name=pool_name)
-            return pool
+                # pool = pooling_function(inputs=conv, pool_size=pool_size, strides=pool_strides, name=pool_name)
+            return conv
 
         def build_layers(inputs, filters_per_layer, kernel_size_per_layer, conv_strides_per_layer):
             filters_per_layer = filters_per_layer.ravel()  # 平坦化数组
