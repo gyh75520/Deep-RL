@@ -127,10 +127,10 @@ class CNN_Brain(Brain):
 
         # ------------------ replace_target_params op ------------------
         self.update_target = []
+        rr = re.compile('target_net')
         t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, rr)
-        print(t_params)
+        rr = re.compile('eval_net')
         e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, rr)
-        print(e_params)
         for t, e in zip(t_params, e_params):
             self.update_target.append(tf.assign(t, e))
 
