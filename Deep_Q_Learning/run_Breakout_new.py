@@ -79,6 +79,8 @@ for i_episode in range(100000):
             RL.store_memory(state, action, clippedReward, state_, done)
 
         if len(RL.memory) > 50000:
+            if len(RL.memory) == 50001:
+                print('---------------------- Start Training ----------------------')
             RL.learn()
         if done:
             print('episode: ', i_episode,

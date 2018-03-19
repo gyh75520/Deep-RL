@@ -113,13 +113,21 @@ class CNN_Brain(Brain):
         with tf.variable_scope('loss'):
             self.action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')  # one hot presentatio
             Q_action = tf.reduce_sum(tf.multiply(self.q_eval, self.action), reduction_indices=1)
-            self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, Q_action))
+
+            # --------new---------
+            difference = tf.abs(Q_action - self.q_target)
+            quadratic_part = tf.clip_by_value(difference, 0.0, 1.0)
+            linear_part = difference - quadratic_part
+            errors = (0.5 * tf.square(quadratic_part)) + linear_part
+            self.loss = tf.reduce_sum(errors)
+            # ----------------------
+            # self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, Q_action))
             # self.loss = tf.reduce_mean(tf.square(self.q_target - Q_action))
             if self.output_graph:
                 tf.summary.scalar('loss', self.loss)
 
         with tf.variable_scope('train'):
-            self.train_op = self.Optimizer(learning_rate=self.lr, momentum=0.95).minimize(self.loss)
+            self.train_op = self.Optimizer(learning_rate=self.lr, decay=.95, epsilon=.01).minimize(self.loss)
 
         # ------------------ 创建 target 神经网络, 提供 target Q ------------------
         self.s_ = tf.placeholder(tf.uint8, [None, self.observation_width, self.observation_height, self.observation_depth], name='s_')
