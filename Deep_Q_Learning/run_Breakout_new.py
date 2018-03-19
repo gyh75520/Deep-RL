@@ -7,7 +7,7 @@ from video_env import video_env
 import scipy.ndimage as ndimage
 
 env = gym.make('Breakout-v0')   # 定义使用 gym 库中的那一个环境
-
+n_actions = env.action_space.n
 
 print(env.action_space.n)  # 查看这个环境中可用的 action 有多少个
 print(env.observation_space)    # 查看这个环境中可用的 state 的 observation 有多少个
@@ -29,6 +29,7 @@ RL = Agent(
     reward_decay=0.99,
     MAX_EPSILON=1,  # epsilon 的最大值
     MIN_EPSILON=0.1,  # epsilon 的最小值
+    LAMBDA=0.00001,
     replace_target_iter=10000,
     memory_size=1000000,
     batch_size=32,
@@ -48,6 +49,7 @@ def preprocess(screen):
 
 env = video_env(env)
 total_steps = 0
+learn_start_size = 50000
 
 for i_episode in range(100000):
 
@@ -61,8 +63,10 @@ for i_episode in range(100000):
     while True:
         # env.render()
 
-        action = RL.choose_action(state)
-
+        if len(RL.memory) > learn_start_size:
+            action = RL.choose_action(state)
+        else:
+            action = np.random.randint(0, n_actions)
         observation_, reward, done, info = env.step(action)
 
         totalR += reward
@@ -78,8 +82,8 @@ for i_episode in range(100000):
             clippedReward = min(1, max(-1, reward))
             RL.store_memory(state, action, clippedReward, state_, done)
 
-        if len(RL.memory) > 50000:
-            if len(RL.memory) == 50001:
+        if len(RL.memory) > learn_start_size:
+            if len(RL.memory) == learn_start_size + 1:
                 print('---------------------- Start Training ----------------------')
             RL.learn()
         if done:
