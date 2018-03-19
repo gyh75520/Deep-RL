@@ -24,7 +24,7 @@ class CNN_Brain(Brain):
         kernel_size_per_layer=[(8, 8), (4, 4), (3, 3)],  # 卷积核的size
         conv_strides_per_layer=[(4, 4), (2, 2), (1, 1)],  # 卷积层的strides
         padding='valid',  # same or valid
-        b_initializer=tf.zeros_initializer(),  # tf.constant_initializer(0.1)
+        b_initializer=tf.constant_initializer(0.01),  # tf.constant_initializer(0.1)
         pooling_function=tf.layers.max_pooling2d,  # max_pooling2d or average_pooling2d
         pool_size=(2, 2),  # pooling的size
         pool_strides=(2, 2),  # pooling的strides
@@ -96,10 +96,11 @@ class CNN_Brain(Brain):
             dense = tf.layers.dense(inputs=inputs_flat, units=512, activation=tf.nn.relu)
 
             # 添加 dropout 处理过拟合
-            dropout = tf.layers.dropout(inputs=dense, rate=0.4)
+            # dropout = tf.layers.dropout(inputs=dense, rate=0.4)
             out_size = self.n_actions
             # 输出层
-            out = tf.layers.dense(inputs=dropout, units=out_size)
+            # out = tf.layers.dense(inputs=dropout, units=out_size)
+            out = tf.layers.dense(inputs=dense, units=out_size)
             return out
 
         # ------------------ 创建 eval 神经网络, 及时提升参数 ------------------

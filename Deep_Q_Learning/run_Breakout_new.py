@@ -21,7 +21,9 @@ Brain = brain(n_actions=env.action_space.n,
               observation_depth=4,
               filters_per_layer=np.array([32, 64, 64]),
               restore=False,
-              output_graph=False)
+              output_graph=False,
+              checkpoint_dir='DQN_CNN_3_19_20_Net'
+              )
 RL = Agent(
     brain=Brain,
     n_actions=env.action_space.n,
@@ -84,7 +86,7 @@ for i_episode in range(100000):
 
         if len(RL.memory) > learn_start_size:
             if len(RL.memory) == learn_start_size + 1:
-                print('---------------------- Start Training ----------------------')
+                print('\n---------------------------------- Start Training ----------------------------------------')
             RL.learn()
         if done:
             print('episode: ', i_episode,
