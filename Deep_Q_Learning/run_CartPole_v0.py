@@ -65,6 +65,8 @@ def run_game(episode, plt_q=False):
             totalR += reward
             RL.store_memory(observation, action, reward, observation_, done)
             RL.learn()
+            observation = observation_
+            total_steps += 1
             if done:
                 print('episode: ', i_episode, ' epsilon: ', RL.epsilon, 'total_reward:', totalR)
                 if plt_q:
@@ -72,8 +74,6 @@ def run_game(episode, plt_q=False):
                 else:
                     RL.statistical_values(totalR)
                 break
-            observation = observation_
-            total_steps += 1
 
     # Brain.save()  # 存储神经网络
     RL.plot_values()
