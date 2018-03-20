@@ -93,14 +93,14 @@ class CNN_Brain(Brain):
             # 构造全连接层
             flat_size = inputs.shape[1] * inputs.shape[2] * inputs.shape[3]
             inputs_flat = tf.reshape(inputs, [-1, int(flat_size)])
-            dense = tf.layers.dense(inputs=inputs_flat, units=512, activation=tf.nn.relu)
+            dense = tf.layers.dense(inputs=inputs_flat, units=512, activation=tf.nn.relu, bias_initializer=self.b_initializer)
 
             # 添加 dropout 处理过拟合
             # dropout = tf.layers.dropout(inputs=dense, rate=0.4)
             out_size = self.n_actions
             # 输出层
             # out = tf.layers.dense(inputs=dropout, units=out_size)
-            out = tf.layers.dense(inputs=dense, units=out_size)
+            out = tf.layers.dense(inputs=dense, units=out_size, bias_initializer=self.b_initializer)
             return out
 
         # ------------------ 创建 eval 神经网络, 及时提升参数 ------------------
