@@ -88,14 +88,15 @@ for i_episode in range(100000):
             if len(RL.memory) == learn_start_size + 1:
                 print('\n---------------------------------- Start Training ----------------------------------------')
             RL.learn()
+
+        state = state_
+        total_steps += 1
+
         if done:
             print('episode: ', i_episode,
                   ' epsilon: ', round(RL.epsilon, 2),
                   'total_reward:', totalR)
             break
 
-        state = state_
-
-        total_steps += 1
 
 Brain.save()
