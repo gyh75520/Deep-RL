@@ -11,7 +11,7 @@ import numpy as np
 import random
 import sys
 # sys.path.append("..")
-from Deep_Q_Learning.Agent import Agent as agent
+from DQN.Agent import Agent as agent
 
 
 class Agent(agent):

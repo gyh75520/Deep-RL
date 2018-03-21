@@ -10,7 +10,7 @@ import tensorflow as tf
 import numpy as np
 import sys
 sys.path.append("..")
-from Deep_Q_Learning.base_Brain import Brain
+from DQN.base_Brain import Brain
 
 
 class MLP_Brain(Brain):

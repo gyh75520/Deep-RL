@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 import gym
 from MLP_Brain import MLP_Brain as brain
-from Agent import Agent as DDQN_Agent
-from Deep_Q_Learning.Agent import Agent as DQN_Agent
+from DDQN_Agent import Agent as DDQN_Agent
+from DQN.Agent import Agent as DQN_Agent
 import numpy as np
 import tensorflow as tf
 
@@ -12,7 +12,7 @@ env.seed(1)
 
 n_actions = env.action_space.n
 n_features = env.observation_space.shape[0]
-neurons_per_layer = np.array([64])
+neurons_per_layer = np.array([16, 32, 32])
 learning_rate = 0.00025
 output_graph = False
 restore = False
@@ -20,7 +20,7 @@ restore = False
 reward_decay = 0.95
 replace_target_iter = 1000
 memory_size = 100000
-batch_size = 64
+batch_size = 32
 MAX_EPSILON = 0.9
 LAMBDA = 0.0001
 
@@ -61,7 +61,7 @@ def init_DDQN():
         brain=Brain,
         n_actions=n_actions,
         observation_space_shape=env.observation_space.shape,
-        reward_decay=reward_decay,
+        reward_decay=0.948,
         replace_target_iter=replace_target_iter,
         memory_size=memory_size,
         MAX_EPSILON=MAX_EPSILON,
@@ -103,8 +103,8 @@ def run(RL, episode_Num, plt_q=True):
 
 
 def compare():
-    rum_times = 2
-    episode_Num = 1000
+    rum_times = 1
+    episode_Num = 400
 
     DDQN_rewards = []
     DQN_rewards = []
@@ -142,6 +142,8 @@ def compare():
     import matplotlib.pyplot as plt
     plt.plot(np.array(DQN_av_rewards), c='r', label='DQN')
     plt.plot(np.array(DDQN_av_rewards), c='b', label='DDQN')
+    # plt.plot(np.array(DQN_av_q_change_evals), c='r', label='DQN')
+    # plt.plot(np.array(DDQN_av_q_change_evals), c='b', label='DDQN')
     plt.legend(loc='best')
     # plt.ylabel('Q Value')
     plt.ylabel('Reward')

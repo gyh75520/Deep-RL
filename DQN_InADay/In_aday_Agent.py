@@ -10,8 +10,7 @@ using:
 import numpy as np
 import random
 # sys.path.append("..")
-from Deep_Q_Learning.Agent import Agent as agent
-import operator
+from DQN.Agent import Agent as agent
 import math
 
 
