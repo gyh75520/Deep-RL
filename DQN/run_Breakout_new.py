@@ -51,7 +51,7 @@ def preprocess(screen):
 
 env = video_env(env)
 total_steps = 0
-learn_start_size = 50000
+learn_start_size = 50
 
 for i_episode in range(100000):
 

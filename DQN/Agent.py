@@ -127,7 +127,7 @@ class Agent:
             if not hasattr(self, 'q_change_list'):
                 self.q_change_list = []
             q_value = self.brain.predict_eval_action(states)
-            print('q_change', q_value)
+            # print('q_change', q_value)
             self.q_change_list.append(q_value[0][action])
             return self.rewards, self.q_change_list
 

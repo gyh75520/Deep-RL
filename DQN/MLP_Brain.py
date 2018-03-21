@@ -20,7 +20,7 @@ class MLP_Brain(Brain):
         activation_function=tf.nn.relu,  # 激活函数
         Optimizer=tf.train.AdamOptimizer,  # 更新方法 tf.train.AdamOptimizer tf.train.RMSPropOptimizer GradientDescentOptimizer..
         learning_rate=0.01,  # 学习速率
-        w_initializer=tf.random_normal_initializer(0., 0.1),
+        w_initializer=tf.random_normal_initializer(0., 0.3),
         b_initializer=tf.constant_initializer(0.01),
         output_graph=False,  # 使用 tensorboard
         restore=False,  # 是否使用存储的神经网络
