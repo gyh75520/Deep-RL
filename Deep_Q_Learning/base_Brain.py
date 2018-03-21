@@ -46,7 +46,7 @@ class Brain:
         # self.cost_his = []
 
     def _build_net(self):
-        print('add your Neural_Networks')
+        raise Exception('add your Neural_Networks')
 
     # 训练 eval 神经网络
     def train(self, input_s, q_target, action, learn_step_counter):
