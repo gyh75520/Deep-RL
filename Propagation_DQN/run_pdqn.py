@@ -1,9 +1,8 @@
 # -*- coding: UTF-8 -*-
 import gym
 from MLP_Brain import MLP_Brain as brain
-from In_aday_Agent import Agent
+from PDQN_Agent import Agent
 import numpy as np
-
 env = gym.make('CartPole-v0')   # 定义使用 gym 库中的那一个环境
 env = env.unwrapped  # 注释掉的话 每局游戏 reward之和最高200
 env.seed(1)
@@ -37,7 +36,7 @@ RL = Agent(
 
 def run_game():
     total_steps = 0
-    for i_episode in range(1, 1001):
+    for i_episode in range(1, 800):
 
         observation = env.reset()
 
@@ -66,4 +65,4 @@ def run_game():
 
 
 run_game()
-RL.plot_values('In_aday version')
+RL.plot_values('PDQN version')

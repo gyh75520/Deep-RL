@@ -9,7 +9,9 @@ using:
 
 import numpy as np
 import random
-from Agent import Agent as agent
+import sys
+# sys.path.append("..")
+from Deep_Q_Learning.Agent import Agent as agent
 import operator
 import math
 
@@ -37,7 +39,7 @@ class Agent(agent):
         q_lower_max = []
         for index in batch_memory_index:
             q_lower = []
-            for k in range(1, min(self.horizon_K, len(self.memory) - index - 1)):
+            for k in range(1, min(self.horizon_K, len(self.memory) - index - 1) + 1):
                 cumulative_r = 0
                 for i in range(0, k + 1):
                     next_index = index + i
@@ -61,7 +63,7 @@ class Agent(agent):
         q_upper_min = []
         for index in batch_memory_index:
             q_upper = []
-            for k in range(1, min(self.horizon_K, index - 1)):
+            for k in range(1, min(self.horizon_K, index - 1) + 1):
                 cumulative_r = 0
                 for i in range(0, k + 1):
                     next_index = index - k - 1 + i
@@ -72,11 +74,13 @@ class Agent(agent):
                 # print('q_before', q_before[0])
                 # print('q', (math.pow(self.gamma, -k - 1) * q_before[0][self.memory[index - k - 1][1]]))
                 # print('cumulative_r', cumulative_r)
-                q_upper.append((math.pow(self.gamma, -k - 1) * q_before[0][memory_before[1]]) - cumulative_r)
+
+                # q_upper.append((math.pow(self.gamma, -k - 1) * q_before[0][memory_before[1]]) - cumulative_r)
+                q_upper.append(math.pow(self.gamma, -k - 1) * np.max(q_before[0]) - cumulative_r)
             if q_upper:
                 q_upper_min.append(min(q_upper))
             else:
-                q_upper_min.append(0)
+                q_upper_min.append(100000)
 
         return np.array(q_upper_min)
 
@@ -100,10 +104,6 @@ class Agent(agent):
         action = np.array([o[1] for o in batch_memory])
         reward = np.array([o[2] for o in batch_memory])
 
-        # 获取 q_next (target_net 产生的 q) 和 q_eval(eval_net 产生的 q)
-        # q_next_is_end = np.zeros(self.n_actions)
-        # self.brain.predict_target_action([s]) 输出 [[x,x]] ravel() 去掉外层list [x,x]
-        # q_next = np.array([(q_next_is_end if o[4] is True else self.brain.predict_target_action([o[3]]).ravel()) for o in batch_memory])
         q_next = self.brain.predict_target_action(states_)
         '''
         q_target_ = []
@@ -113,22 +113,30 @@ class Agent(agent):
         '''
         # q_target = reward + self.gamma * np.max(q_next, axis=1)
 
-        # -------------------------------different-----------------------------------------
-        # batch_y_true = random.sample(self.y_true, batch_size)
-
+        # ---------------------- difference with DQN ---------------------------
         q_target = []
+        for i in range(0, batch_size):
+            done = batch_memory[i][4]
+            if done:
+                q_target.append(reward[i])
+            else:
+                q_target.append(reward[i] + self.gamma * np.max(q_next[i]))
         q_lower_max = self.calculating_q_lower_max(batch_memory_index)
         q_upper_min = self.calculating_q_upper_min(batch_memory_index)
-        self.print_q = q_upper_min
-        q_average = (q_lower_max + q_upper_min) / 2
-        # print('q_lower_max', q_lower_max)
-        # print('q_upper_min', q_upper_min)
-        # print('q_average', q_average)
+
+        for i in range(0, batch_size):
+            if q_lower_max[i] < q_upper_min[i]:
+                if q_target[i] < q_lower_max[i]:
+                    q_target[i] = q_lower_max[i]
+                elif q_target[i] > q_upper_min[i]:
+                    q_target[i] = q_upper_min[i]
+
+        self.print_q = q_target
+        # ----------------------------------------------------------------------
         # One Hot Encoding
         one_hot_action = np.eye(self.n_actions)[action]
         # 训练 eval 神经网络
-        self.brain.train(states, q_average, one_hot_action, self.learn_step_counter)
-
+        self.brain.train(states, q_target, one_hot_action, self.learn_step_counter)
         # brain 中 的 output_graph 需要为 True
         self.brain.output_tensorboard(states, q_target, states_, one_hot_action, self.learn_step_counter)
         self.learn_step_counter += 1

@@ -6,16 +6,11 @@ using:
 - Tensorflow: 1.2.1
 - gym: 0.9.2
 """
-
 import tensorflow as tf
 import numpy as np
 import sys
 sys.path.append("..")
 from Deep_Q_Learning.base_Brain import Brain
-
-'''
-Same as DQN , No difference
-'''
 
 
 class MLP_Brain(Brain):
@@ -98,7 +93,15 @@ class MLP_Brain(Brain):
         with tf.variable_scope('loss'):
             self.action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')  # one hot presentatio
             Q_action = tf.reduce_sum(tf.multiply(self.q_eval, self.action), reduction_indices=1)
-            self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, Q_action))
+            # ---------------------- difference with DQN ------------------------------
+            self.q_lower_max = tf.placeholder(tf.float32, [None], name='q_lower_max')
+            self.q_upper_min = tf.placeholder(tf.float32, [None], name='q_upper_min')
+            self.loss_1 = tf.reduce_mean(tf.squared_difference(self.q_target, Q_action))
+            self._lambda = tf.constant(4, tf.float32)
+            self.loss_2 = tf.multiply(self._lambda, tf.reduce_mean(tf.squared_difference(self.q_lower_max, Q_action)))
+            self.loss_3 = tf.reduce_mean(tf.squared_difference(self.q_upper_min, Q_action))
+            self.loss = tf.add(tf.add(self.loss_1, self.loss_2), self.loss_3)
+            # ------------------------------------------------------------------------
             # self.loss = tf.reduce_mean(tf.square(self.q_target - Q_action))
             if self.output_graph:
                 tf.summary.scalar('loss', self.loss)
@@ -118,6 +121,10 @@ class MLP_Brain(Brain):
         e_params = tf.get_collection('eval_net_params')
         for t, e in zip(t_params, e_params):
             self.update_target.append(tf.assign(t, e))
+
+    # 训练 eval 神经网络
+    def train(self, input_s, q_target, action, q_lower_max, q_upper_min, learn_step_counter):
+        self.sess.run(self.train_op, feed_dict={self.s: input_s, self.action: action, self.q_target: q_target, self.q_lower_max: q_lower_max, self.q_upper_min: q_upper_min})
 
     def replace_target_params(self):
         # 将 target_net 的参数 替换成 eval_net 的参数
