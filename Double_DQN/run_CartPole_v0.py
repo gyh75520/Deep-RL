@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import gym
 from MLP_Brain import MLP_Brain as brain
-from Agent import Agent
+from DDQN_Agent import Agent
 import numpy as np
 env = gym.make('CartPole-v0')   # 定义使用 gym 库中的那一个环境
 env = env.unwrapped  # 注释掉的话 每局游戏 reward之和最高200
