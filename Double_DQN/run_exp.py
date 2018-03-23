@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import gym
-from MLP_Brain import MLP_Brain as brain
+from MLP_Brain import MLP_Brain as Brain
 from DDQN_Agent import Agent
 import numpy as np
 from utls import data_save
@@ -29,10 +29,9 @@ MAX_EPSILON = configs['Agent']['MAX_EPSILON']
 MIN_EPSILON = configs['Agent']['MIN_EPSILON']
 LAMBDA = configs['Agent']['LAMBDA']
 
-
 # learning_rate 重要
 # restore 和 MAX_EPSILON 一起调整
-Brain = brain(
+brain = Brain(
     n_actions=env.action_space.n,
     n_features=env.observation_space.shape[0],
     neurons_per_layer=neurons_per_layer,
@@ -40,8 +39,8 @@ Brain = brain(
     output_graph=output_graph,
     restore=restore,
 )
-RL = Agent(
-    brain=Brain,
+agent = Agent(
+    brain=brain,
     n_actions=env.action_space.n,
     observation_space_shape=env.observation_space.shape,
     reward_decay=reward_decay,
@@ -54,21 +53,7 @@ RL = Agent(
 )
 
 
-def set_memory_with_random():
-    while len(RL.memory) < RL.memory_size:
-        observation = env.reset()
-        while True:
-            # env.render()
-            action = RL.choose_action(observation)
-            observation_, reward, done, info = env.step(action)
-            RL.store_memory(observation, action, reward, observation_, done)
-            if done:
-                break
-            observation = observation_
-    print('set_memory_with_random successful, memory_size:', len(RL.memory))
-
-
-def run_game(episode, plt_q=False):
+def run_game(episode, env, Agent, plt_q=False):
     # set_memory_with_random()
     total_steps = 0
     # q_change = [[0.03073904, 0.00145001, -0.03088818, -0.03131252]]
@@ -76,28 +61,28 @@ def run_game(episode, plt_q=False):
         observation = env.reset()
         if plt_q:
             q_change = [observation]
-            action_change = RL.choose_action(observation)
+            action_change = Agent.choose_action(observation)
         totalR = 0
         while True:
             # env.render()
-            action = RL.choose_action(observation)
+            action = Agent.choose_action(observation)
             observation_, reward, done, info = env.step(action)
             totalR += reward
-            RL.store_memory(observation, action, reward, observation_, done)
-            RL.learn()
+            Agent.store_memory(observation, action, reward, observation_, done)
+            Agent.learn(costFlag=done)
             observation = observation_
             total_steps += 1
             if done:
-                print('episode: ', i_episode, ' epsilon: ', RL.epsilon, 'total_reward:', totalR)
+                print('episode: ', i_episode, ' epsilon: ', Agent.epsilon, 'total_reward:', totalR)
                 if plt_q:
-                    RL.statistical_values(totalR, q_change, action_change)
+                    Agent.statistical_values(totalR, q_change, action_change)
                 else:
-                    RL.statistical_values(totalR)
+                    Agent.statistical_values(totalR)
                 break
 
     # Brain.save()  # 存储神经网络
-    # RL.plot_values()
+    # Agent.plot_values()
 
 
-run_game(600, True)
-data_save("DDQN", env_name, Brain, RL)
+run_game(600, env, agent, True)
+data_save("DDQN", env_name, brain, agent)

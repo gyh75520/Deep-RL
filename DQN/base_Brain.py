@@ -19,7 +19,7 @@ class Brain:
         learning_rate=0.01,  # 学习速率
         output_graph=False,  # 使用 tensorboard
         restore=False,  # 是否使用存储的神经网络
-        checkpoint_dir='NN_MLP_Net',  # 存储的dir name
+        checkpoint_dir='NN_MLP_Net',  # 存储的 dir name
     ):
         self.n_actions = n_actions
         self.activation_function = activation_function
@@ -49,8 +49,12 @@ class Brain:
         raise Exception('add your Neural_Networks')
 
     # 训练 eval 神经网络
-    def train(self, input_s, q_target, action, learn_step_counter):
-        self.sess.run(self.train_op, feed_dict={self.s: input_s, self.action: action, self.q_target: q_target})
+    def train(self, input_s, q_target, action, costCalculate=False):
+        if costCalculate:
+            _, cost = self.sess.run([self.train_op, self.loss], feed_dict={self.s: input_s, self.action: action, self.q_target: q_target})
+            return cost
+        else:
+            self.sess.run(self.train_op, feed_dict={self.s: input_s, self.action: action, self.q_target: q_target})
 
     def output_tensorboard(self, input_s, q_target, input_s_, action, learn_step_counter):
         if self.output_graph:

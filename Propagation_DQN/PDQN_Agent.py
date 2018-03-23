@@ -80,11 +80,11 @@ class Agent(agent):
             if q_upper:
                 q_upper_min.append(min(q_upper))
             else:
-                q_upper_min.append(100000)
+                q_upper_min.append(0)
 
         return np.array(q_upper_min)
 
-    def learn(self):
+    def learn(self, costFlag=False):
         # 每隔 replace_target_iter 步 替换 target_net 参数
         if self.learn_step_counter % self.replace_target_iter == 0:
             self.brain.replace_target_params()
@@ -136,7 +136,11 @@ class Agent(agent):
         # One Hot Encoding
         one_hot_action = np.eye(self.n_actions)[action]
         # 训练 eval 神经网络
-        self.brain.train(states, q_target, one_hot_action, self.learn_step_counter)
+        if costFlag:
+            cost = self.brain.train(states, q_target, one_hot_action, True)
+            self.cost_his.append(cost)
+        else:
+            self.brain.train(states, q_target, one_hot_action)
         # brain 中 的 output_graph 需要为 True
         self.brain.output_tensorboard(states, q_target, states_, one_hot_action, self.learn_step_counter)
         self.learn_step_counter += 1
