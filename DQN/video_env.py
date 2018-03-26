@@ -23,7 +23,7 @@ class video_env(object):
     def step(self, action):
         screenRGB, r, done, info = self.env.step(action)
         reward = r
-        for i in range(self.k):
+        for i in range(self.k - 1):
             prevScreenRGB = screenRGB
             if done:
                 break

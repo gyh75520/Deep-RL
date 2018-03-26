@@ -5,7 +5,7 @@ from Agent import Agent
 import numpy as np
 import sys
 sys.path.append("..")
-from utls import data_save
+from utils import data_save
 from pqExp_config import configs
 
 env_name = 'CartPole-v0'

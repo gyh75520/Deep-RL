@@ -3,7 +3,7 @@ import gym
 from MLP_Brain import MLP_Brain as Brain
 from PDQN_Agent import Agent
 import numpy as np
-from utls import data_save
+from utils import data_save
 from pqExp_config import configs
 
 env_name = 'CartPole-v0'
