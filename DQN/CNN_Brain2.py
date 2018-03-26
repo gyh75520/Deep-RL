@@ -112,12 +112,11 @@ class CNN_Brain(Brain):
             return y
 
         # ------------------ 创建 eval 神经网络, 及时提升参数 ------------------
-        self.s = tf.placeholder(tf.uint8, [None, self.observation_width, self.observation_height, self.observation_depth], name='s')  # input
+        self.s = tf.placeholder(tf.float32, [None, self.observation_width, self.observation_height, self.observation_depth], name='s')  # input
         self.q_target = tf.placeholder(tf.float32, [None], name='Q_target')  # for calculating loss
 
-        self.normalized_s = tf.to_float(self.s) / 255.0
         with tf.variable_scope('eval_net'):
-            self.q_eval = build_layers(self.normalized_s, 'eval')
+            self.q_eval = build_layers(self.s, 'eval')
 
         with tf.variable_scope('loss'):
             self.action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')  # one hot presentatio
@@ -139,10 +138,9 @@ class CNN_Brain(Brain):
             self.train_op = self.Optimizer(learning_rate=self.lr, decay=.95, epsilon=.01).minimize(self.loss)
 
         # ------------------ 创建 target 神经网络, 提供 target Q ------------------
-        self.s_ = tf.placeholder(tf.uint8, [None, self.observation_width, self.observation_height, self.observation_depth], name='s_')
-        self.normalized_s_ = tf.to_float(self.s_) / 255.0
+        self.s_ = tf.placeholder(tf.float32, [None, self.observation_width, self.observation_height, self.observation_depth], name='s_')
         with tf.variable_scope('target_net'):
-            self.q_next = build_layers(self.normalized_s_, 'target')
+            self.q_next = build_layers(self.s_, 'target')
 
         # ------------------ replace_target_params op ------------------
         self.update_target = []
