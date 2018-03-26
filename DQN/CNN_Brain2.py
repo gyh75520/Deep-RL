@@ -47,6 +47,7 @@ class CNN_Brain(Brain):
         self.pooling_function = pooling_function
         self.pool_size = pool_size
         self.pool_strides = pool_strides
+        self.normalizeWeights = True
         # self.lr = learning_rate
         # self.Optimizer = Optimizer
         # self.output_graph = output_graph
@@ -55,61 +56,68 @@ class CNN_Brain(Brain):
         # self.sess = tf.Session()
         super(CNN_Brain, self).__init__(n_actions, activation_function, Optimizer, learning_rate,  output_graph, restore, checkpoint_dir)
 
+    def makeLayerVariables(self, shape, trainable, name_suffix):
+        import math
+        if self.normalizeWeights:
+            # This is my best guess at what DeepMind does via torch's Linear.lua and SpatialConvolution.lua (see reset methods).
+            # np.prod(shape[0:-1]) is attempting to get the total inputs to each node
+            stdv = 1.0 / math.sqrt(np.prod(shape[0:-1]))
+            weights = tf.Variable(tf.random_uniform(shape, minval=-stdv, maxval=stdv), trainable=trainable, name='W_' + name_suffix)
+            biases = tf.Variable(tf.random_uniform([shape[-1]], minval=-stdv, maxval=stdv), trainable=trainable, name='W_' + name_suffix)
+        else:
+            weights = tf.Variable(tf.truncated_normal(shape, stddev=0.01), trainable=trainable, name='W_' + name_suffix)
+            biases = tf.Variable(tf.fill([shape[-1]], 0.1), trainable=trainable, name='W_' + name_suffix)
+        return weights, biases
+
     def _build_net(self):
-        def add_conv_and_pool_layer(
-            inputs,
-            n_layer,  # 当前层是第几层
-            activation_function=tf.nn.relu,  # 激活函数
-            filters=32,
-            kernel_size=(5, 5),  # 卷积核的size
-            conv_strides=(1, 1),  # 卷积层的strides
-            padding='valid',  # same or valid
-            pooling_function=tf.layers.max_pooling2d,  # max_pooling2d or average_pooling2d
-            pool_size=(2, 2),  # pooling的size
-            pool_strides=(2, 2),  # pooling的strides
-        ):
-            layer_name = 'Conv_and_Pool_Layer%s' % n_layer
-            with tf.variable_scope(layer_name):
-                conv_name = 'Conv%s' % n_layer
-                pool_name = 'Pool%s' % n_layer
-                conv = tf.layers.conv2d(inputs=inputs, filters=filters, kernel_size=kernel_size, padding=padding, strides=conv_strides,
-                                        activation=activation_function, bias_initializer=self.b_initializer, name=conv_name)
-                # pool = pooling_function(inputs=conv, pool_size=pool_size, strides=pool_strides, name=pool_name)
-            return conv
+        def build_layers(inputs, name, trainable=True,):
+            # Second layer convolves 32 8x8 filters with stride 4 with relu
+            with tf.variable_scope("cnn1_" + name):
+                W_conv1, b_conv1 = self.makeLayerVariables([8, 8, 4, 32], trainable, "conv1")
 
-        def build_layers(inputs, filters_per_layer, kernel_size_per_layer, conv_strides_per_layer):
-            filters_per_layer = filters_per_layer.ravel()  # 平坦化数组
-            layer_numbers = filters_per_layer.shape[0]
-            l_range = range(0, layer_numbers)
-            for l in l_range:  # 构造卷积和池化层
-                filters = filters_per_layer[l]
-                kernel_size = kernel_size_per_layer[l]
-                conv_strides = conv_strides_per_layer[l]
-                inputs = add_conv_and_pool_layer(inputs=inputs, n_layer=l + 1, activation_function=self.activation_function,
-                                                 filters=filters, kernel_size=kernel_size, conv_strides=conv_strides,
-                                                 padding=self.padding, pooling_function=self.pooling_function,
-                                                 pool_size=self.pool_size, pool_strides=self.pool_strides)
+                h_conv1 = tf.nn.relu(tf.nn.conv2d(inputs, W_conv1, strides=[1, 4, 4, 1], padding='VALID') + b_conv1, name="h_conv1")
+                print(h_conv1)
 
-            # 构造全连接层
-            flat_size = inputs.shape[1] * inputs.shape[2] * inputs.shape[3]
-            inputs_flat = tf.reshape(inputs, [-1, int(flat_size)])
-            dense = tf.layers.dense(inputs=inputs_flat, units=512, activation=tf.nn.relu, bias_initializer=self.b_initializer)
+            # Third layer convolves 64 4x4 filters with stride 2 with relu
+            with tf.variable_scope("cnn2_" + name):
+                W_conv2, b_conv2 = self.makeLayerVariables([4, 4, 32, 64], trainable, "conv2")
 
-            # 添加 dropout 处理过拟合
-            # dropout = tf.layers.dropout(inputs=dense, rate=0.4)
-            out_size = self.n_actions
-            # 输出层
-            # out = tf.layers.dense(inputs=dropout, units=out_size)
-            out = tf.layers.dense(inputs=dense, units=out_size, bias_initializer=self.b_initializer)
-            return out
+                h_conv2 = tf.nn.relu(tf.nn.conv2d(h_conv1, W_conv2, strides=[1, 2, 2, 1], padding='VALID') + b_conv2, name="h_conv2")
+                print(h_conv2)
+
+            # Fourth layer convolves 64 3x3 filters with stride 1 with relu
+            with tf.variable_scope("cnn3_" + name):
+                W_conv3, b_conv3 = self.makeLayerVariables([3, 3, 64, 64], trainable, "conv3")
+
+                h_conv3 = tf.nn.relu(tf.nn.conv2d(h_conv2, W_conv3, strides=[1, 1, 1, 1], padding='VALID') + b_conv3, name="h_conv3")
+                print(h_conv3)
+
+            h_conv3_flat = tf.reshape(h_conv3, [-1, 7 * 7 * 64], name="h_conv3_flat")
+            print(h_conv3_flat)
+
+            # Fifth layer is fully connected with 512 relu units
+            with tf.variable_scope("fc1_" + name):
+                W_fc1, b_fc1 = self.makeLayerVariables([7 * 7 * 64, 512], trainable, "fc1")
+
+                h_fc1 = tf.nn.relu(tf.matmul(h_conv3_flat, W_fc1) + b_fc1, name="h_fc1")
+                print(h_fc1)
+
+            # Sixth (Output) layer is fully connected linear layer
+            with tf.variable_scope("fc2_" + name):
+                W_fc2, b_fc2 = self.makeLayerVariables([512, self.n_actions], trainable, "fc2")
+
+                y = tf.matmul(h_fc1, W_fc2) + b_fc2
+                print(y)
+
+            return y
 
         # ------------------ 创建 eval 神经网络, 及时提升参数 ------------------
-        self.s = tf.placeholder(tf.float32, [None, self.observation_width, self.observation_height, self.observation_depth], name='s')  # input
+        self.s = tf.placeholder(tf.uint8, [None, self.observation_width, self.observation_height, self.observation_depth], name='s')  # input
         self.q_target = tf.placeholder(tf.float32, [None], name='Q_target')  # for calculating loss
 
-        # self.normalized_s = tf.to_float(self.s) / 255.0
+        self.normalized_s = tf.to_float(self.s) / 255.0
         with tf.variable_scope('eval_net'):
-            self.q_eval = build_layers(self.s, self.filters_per_layer, self.kernel_size_per_layer, self.conv_strides_per_layer)
+            self.q_eval = build_layers(self.normalized_s, 'eval')
 
         with tf.variable_scope('loss'):
             self.action = tf.placeholder(tf.float32, [None, self.n_actions], name='action')  # one hot presentatio
@@ -131,9 +139,10 @@ class CNN_Brain(Brain):
             self.train_op = self.Optimizer(learning_rate=self.lr, decay=.95, epsilon=.01).minimize(self.loss)
 
         # ------------------ 创建 target 神经网络, 提供 target Q ------------------
-        self.s_ = tf.placeholder(tf.float32, [None, self.observation_width, self.observation_height, self.observation_depth], name='s_')
+        self.s_ = tf.placeholder(tf.uint8, [None, self.observation_width, self.observation_height, self.observation_depth], name='s_')
+        self.normalized_s_ = tf.to_float(self.s_) / 255.0
         with tf.variable_scope('target_net'):
-            self.q_next = build_layers(self.s_, self.filters_per_layer, self.kernel_size_per_layer, self.conv_strides_per_layer)
+            self.q_next = build_layers(self.normalized_s_, 'target')
 
         # ------------------ replace_target_params op ------------------
         self.update_target = []

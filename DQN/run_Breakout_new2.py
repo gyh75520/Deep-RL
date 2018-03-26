@@ -5,7 +5,6 @@ import numpy as np
 from video_env import video_env
 # import blosc
 import scipy.ndimage as ndimage
-import scipy
 
 env = gym.make('Breakout-v0')   # 定义使用 gym 库中的那一个环境
 n_actions = env.action_space.n
@@ -46,19 +45,8 @@ def concatenate(screens):
 def preprocess(screen):
     screen = np.dot(screen, np.array([.299, .587, .114])).astype(np.uint8)
     screen = ndimage.zoom(screen, (0.4, 0.525))
-    # print('screen', screen.shape)
     screen.resize((84, 84, 1))
     return screen
-
-
-def processImage(img):
-    rgb = scipy.misc.imresize(img, (84, 84), interp='bilinear')
-    r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
-    gray = 0.2989 * r + 0.5870 * g + 0.1140 * b     # extract luminance
-
-    o = gray.astype('float32') / 128 - 1    # normalize
-    o.resize((84, 84, 1))
-    return o
 
 
 env = video_env(env)
@@ -68,8 +56,8 @@ learn_start_size = 50000
 for i_episode in range(100000):
 
     observation = env.reset()
-    observation = processImage(observation)
-
+    observation = preprocess(observation)
+    # print(type(observation), observation)
     ep_r = 0
     totalR = 0
     observation_input = [observation, observation, observation, observation]
@@ -87,7 +75,7 @@ for i_episode in range(100000):
 
         if (len(observation_input) == 4):
 
-            observation_ = processImage(observation_)
+            observation_ = preprocess(observation_)
             observation_input.insert(0, observation_)
             observation_input.pop(4)
             state_ = concatenate(observation_input)
@@ -111,4 +99,4 @@ for i_episode in range(100000):
             break
 
 
-Brain.save()
+# Brain.save()
