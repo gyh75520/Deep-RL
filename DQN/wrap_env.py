@@ -171,7 +171,7 @@ class ScaledFloatFrame(gym.ObservationWrapper):
         return np.array(obs).astype(np.float32) / 255.0
 
 
-def wrap_dqn(env):
+def wrap_env(env):
     """Apply a common set of wrappers for Atari games."""
     assert 'NoFrameskip' in env.spec.id
     env = EpisodicLifeEnv(env)
