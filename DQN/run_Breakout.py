@@ -31,7 +31,7 @@ RL = Agent(
     reward_decay=0.99,
     MAX_EPSILON=1,  # epsilon 的最大值
     MIN_EPSILON=0.1,  # epsilon 的最小值
-    LAMBDA=0.00001,
+    LAMBDA=0.000002,
     replace_target_iter=10000,
     memory_size=1000000,
     batch_size=32,
@@ -64,10 +64,11 @@ for i_episode in range(1, 10001):
         oneLife_totalR += reward
         RL.store_memory(observation, action, clippedReward, observation_, done)
 
-        if len(RL.memory) > learn_start_size:
-            if len(RL.memory) == learn_start_size + 1:
+        if len(RL.memory) >= learn_start_size:
+            if len(RL.memory) == learn_start_size:
                 print('\n---------------------------------- Start Training ----------------------------------------')
-            RL.learn()
+            if total_steps % 4 == 0:
+                RL.learn()
         if done:
             done_times += 1
             LifeR.append(oneLife_totalR)
