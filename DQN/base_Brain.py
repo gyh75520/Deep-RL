@@ -28,7 +28,9 @@ class Brain:
         self.output_graph = output_graph
         self._build_net()
         self.checkpoint_dir = checkpoint_dir
-        self.sess = tf.Session()
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        self.sess = tf.Session(config=config)
 
         if self.output_graph:
             if tf.gfile.Exists("graph/"):

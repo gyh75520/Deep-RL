@@ -42,10 +42,11 @@ env = wrap_env(env)
 total_steps = 0
 learn_start_size = 50000
 
-for i_episode in range(1, 10001):
+for i_episode in range(1, 100001):
     if i_episode % 1000 == 0:
         Brain.save()
     observation = env.reset()
+    print(observation.shape)
     oneLife_totalR = 0
     done_times = 0
     LifeR = []
