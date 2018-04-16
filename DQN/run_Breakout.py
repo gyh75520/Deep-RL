@@ -31,7 +31,7 @@ RL = Agent(
     reward_decay=0.99,
     MAX_EPSILON=1,  # epsilon 的最大值
     MIN_EPSILON=0.1,  # epsilon 的最小值
-    LAMBDA=0.000002,
+    LAMBDA=0.0000002,
     replace_target_iter=10000,
     memory_size=1000000,
     batch_size=32,
@@ -46,7 +46,6 @@ for i_episode in range(1, 100001):
     if i_episode % 1000 == 0:
         Brain.save()
     observation = env.reset()
-    print(observation.shape)
     oneLife_totalR = 0
     done_times = 0
     LifeR = []
@@ -83,6 +82,5 @@ for i_episode in range(1, 100001):
 
         observation = observation_
         total_steps += 1
-
 
 # Brain.save()
