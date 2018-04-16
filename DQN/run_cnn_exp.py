@@ -2,16 +2,16 @@ import gym
 from CNN_Brain_new import CNN_Brain as Brain
 from Agent import Agent
 import numpy as np
-from wrap_env import wrap_env
 import sys
 sys.path.append("..")
+from wrap_env import wrap_env
 from utils import data_save4cnn
 from cnnExp_config import configs
 
 lifes = 5
 env_name = 'Breakout'
 env = gym.make("{}NoFrameskip-v4".format(env_name))   # 定义使用 gym 库中的那一个环境
-env.seed(1)
+
 print(env.action_space.sample())  # 查看这个环境中可用的 action 有多少个
 print(env.observation_space.shape)    # 查看这个环境中可用的 state 的 observation 有多少个
 print(env.observation_space.high)   # 查看 observation 最高取值
@@ -71,7 +71,7 @@ def run_game(episode, env, Agent, plt_q=False):
     learn_start_size = replay_start_size
     for i_episode in range(1, episode):
         if i_episode % 1000 == 0:
-            Brain.save()
+            brain.save()
         observation = env.reset()
         if plt_q:
             q_change = [observation]

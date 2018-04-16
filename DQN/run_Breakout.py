@@ -2,6 +2,8 @@ import gym
 from CNN_Brain_new import CNN_Brain as brain
 from Agent import Agent
 import numpy as np
+import sys
+sys.path.append("..")
 from wrap_env import wrap_env
 # import blosc
 # import scipy.ndimage as ndimage
