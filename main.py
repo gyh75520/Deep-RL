@@ -7,6 +7,6 @@ model = DQN,DDQN,PDQN,PDDQN,DQN_PER,DDQN_PER,DQN_InAday...
 from run_ContolGame import run_Game
 run_Game('DQN', 'Pendulum-v0', episodes=400)  # model,env,episodes
 
-# # -----------AtariGame-------------
+# -----------AtariGame-------------
 # from run_AtariGame import run_Game
 # run_Game('DQN_PER', 'Breakout', lifes=5, episodes=40001)  # model,env,lifes,episodes
