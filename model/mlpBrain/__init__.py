@@ -5,3 +5,5 @@ from .PDDQN_Brain import PDDQN_Brain
 from .DQN_PER_Brain import DQN_PER_Brain
 from .DDQN_PER_Brain import DDQN_PER_Brain
 from .DQN_InAday_Brain import DQN_InAday_Brain
+from .DQN_PER_Ipm_Brain import DQN_PER_Ipm_Brain
+from .DDQN_PER_Ipm_Brain import DDQN_PER_Ipm_Brain

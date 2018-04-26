@@ -50,3 +50,22 @@ class Memory(object):  # stored as ( s, a, r, s_ ,done) in SumTree
         ps = np.power(clipped_errors, self.alpha)
         for ti, p in zip(tree_idx, ps):
             self.sumTree.update(ti, p)
+
+    # add for own per improvement
+    def batch_nearby_update(self, tree_idx):
+        # print('ps', ps)
+        ipmFactor = 1.2
+        K = 2
+        for k in range(1, K + 1):
+            # tree_nearby_idx = [idx + k if (idx + k) < self.sumTree.capacity else for idx in tree_idx]
+            ps = self.sumTree.tree[tree_idx + k]
+            ps_new = ps * ipmFactor
+            # print('ps_new', ps_new)
+            for ti, p in zip(tree_idx + k, ps_new):
+                self.sumTree.update(ti, p)
+
+            ps = self.sumTree.tree[tree_idx - k]
+            ps_new = ps * ipmFactor
+            # print('ps_new', ps_new)
+            for ti, p in zip(tree_idx - k, ps_new):
+                self.sumTree.update(ti, p)

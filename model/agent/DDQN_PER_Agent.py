@@ -9,7 +9,6 @@ using:
 
 import numpy as np
 from .DQN_PER_Agent import DQN_PER_Agent as agent
-from ..PrioritizedExperienceReplay import Memory
 
 
 class DDQN_PER_Agent(agent):
