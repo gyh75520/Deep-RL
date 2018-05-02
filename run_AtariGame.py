@@ -4,12 +4,13 @@ from config import cnnExp_config as configs
 import numpy as np
 
 
-def run_AtariGame(episode, env, lifes, Agent, Brain, replay_start_size, update_frequency, plt_q=False):
+def run_AtariGame(episode, model, env, env_name, lifes, Agent, Brain, replay_start_size, update_frequency, plt_q=False):
     total_steps = 0
     learn_start_size = replay_start_size
     for i_episode in range(1, episode):
-        if i_episode % 10000 == 0:
+        if i_episode % 5000 == 0:
             Brain.save()
+            data_save4cnn(model, env_name, Brain, Agent)
         observation = env.reset()
         if plt_q:
             q_change = [observation]
@@ -122,5 +123,5 @@ def run_Game(model, env_name, lifes, episodes):
     )
 
     env = wrap_env(env)
-    run_AtariGame(episodes, env, lifes, agent, brain, replay_start_size, update_frequency, False)  # last params = True 记录 q value
-    data_save4cnn(model, env_name, brain, agent)
+    run_AtariGame(episodes, model, env, env_name, lifes, agent, brain, replay_start_size, update_frequency, False)  # last params = True 记录 q value
+    # data_save4cnn(model, env_name, brain, agent)
