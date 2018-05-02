@@ -57,15 +57,14 @@ class Memory(object):  # stored as ( s, a, r, s_ ,done) in SumTree
         ipmFactor = 1.2
         K = 2
         for k in range(1, K + 1):
-            # tree_nearby_idx = [idx + k if (idx + k) < self.sumTree.capacity else for idx in tree_idx]
-            ps = self.sumTree.tree[tree_idx + k]
-            ps_new = ps * ipmFactor
-            # print('ps_new', ps_new)
-            for ti, p in zip(tree_idx + k, ps_new):
-                self.sumTree.update(ti, p)
+            for ti in tree_idx + k:
+                if (ti < self.sumTree.capacity):
+                    ps = self.sumTree.tree[ti]
+                    ps_new = ps * ipmFactor
+                    self.sumTree.update(ti, ps_new)
 
-            ps = self.sumTree.tree[tree_idx - k]
-            ps_new = ps * ipmFactor
-            # print('ps_new', ps_new)
-            for ti, p in zip(tree_idx - k, ps_new):
-                self.sumTree.update(ti, p)
+            for ti in tree_idx - k:
+                if (ti < self.sumTree.capacity):
+                    ps = self.sumTree.tree[ti]
+                    ps_new = ps * ipmFactor
+                    self.sumTree.update(ti, ps_new)
