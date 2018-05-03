@@ -58,13 +58,13 @@ class Memory(object):  # stored as ( s, a, r, s_ ,done) in SumTree
         K = 2
         for k in range(1, K + 1):
             for ti in tree_idx + k:
-                if (ti < self.sumTree.capacity):
+                if (ti < 2 * self.sumTree.capacity - 1):
                     ps = self.sumTree.tree[ti]
                     ps_new = ps * ipmFactor
                     self.sumTree.update(ti, ps_new)
 
             for ti in tree_idx - k:
-                if (ti < self.sumTree.capacity):
+                if (ti > self.sumTree.capacity - 1):
                     ps = self.sumTree.tree[ti]
                     ps_new = ps * ipmFactor
                     self.sumTree.update(ti, ps_new)
