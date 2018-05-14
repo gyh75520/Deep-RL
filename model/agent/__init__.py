@@ -7,3 +7,4 @@ from .DDQN_PER_Agent import DDQN_PER_Agent
 from .DQN_InAday_Agent import DQN_InAday_Agent
 from .DQN_PER_Ipm_Agent import DQN_PER_Ipm_Agent
 from .DDQN_PER_Ipm_Agent import DDQN_PER_Ipm_Agent
+from .PDQN_RePER_Agent import PDQN_RePER_Agent

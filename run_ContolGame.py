@@ -91,6 +91,9 @@ def run_Game(model, env_name, episodes):
     elif model == 'DDQN_PER_Ipm':
         from model.mlpBrain import DDQN_PER_Ipm_Brain as Brain
         from model.agent import DDQN_PER_Ipm_Agent as Agent
+    elif model == 'PDQN_RePER':
+        from model.mlpBrain import PDQN_RePER_Brain as Brain
+        from model.agent import PDQN_RePER_Agent as Agent
 
     env = gym.make(env_name)   # 定义使用 gym 库中的那一个环境
     # env = env.unwrapped  # 注释掉的话 每局游戏 reward之和最高200
