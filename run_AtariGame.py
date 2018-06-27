@@ -1,20 +1,20 @@
 import gym
-from utils import data_save4cnn, wrap_env
+from utils import writeData2File, DataStorage, wrap_env
 from config import cnnExp_config as configs
 import numpy as np
 
 
-def run_AtariGame(episode, model, env, env_name, lifes, Agent, Brain, replay_start_size, update_frequency, plt_q=False):
+def run_AtariGame(episode, model, env, env_name, lifes, Agent, Brain, DataStorage, replay_start_size, update_frequency, is_storeQ=False):
     total_steps = 0
     learn_start_size = replay_start_size
     for i_episode in range(1, episode):
         if i_episode % 5000 == 0:
             Brain.save()
-            data_save4cnn(model, env_name, Brain, Agent)
+            writeData2File(model, env_name, Brain, Agent, DataStorage)
         observation = env.reset()
-        if plt_q:
-            q_change = [observation]
-            action_change = Agent.choose_action(observation)
+        if is_storeQ:
+            InitState = [observation]
+            FirstAction = Agent.choose_action(observation)
         oneLife_totalR = 0
         done_times = 0
         LifeR = []
@@ -43,10 +43,10 @@ def run_AtariGame(episode, model, env, env_name, lifes, Agent, Brain, replay_sta
                 LifeR.append(oneLife_totalR)
                 oneLife_totalR = 0
                 if done_times == lifes:
-                    if plt_q:
-                        Agent.statistical_values(sum(LifeR), q_change, action_change)
-                    else:
-                        Agent.statistical_values(sum(LifeR))
+                    if is_storeQ:
+                        Q_value = Agent.brain.predict_eval_action(InitState)
+                        DataStorage.store_Q(Q_value[0][FirstAction])
+                    DataStorage.store_reward(sum(LifeR))
                     print('episode: ', i_episode, ' epsilon: ', round(Agent.epsilon, 2), 'Each_Life_reward:', LifeR, 'total_reward:', sum(LifeR))
                     break
 
@@ -121,7 +121,8 @@ def run_Game(model, env_name, lifes, episodes):
         memory_size=memory_size,
         batch_size=batch_size,
     )
+    dataStorage = DataStorage()
 
     env = wrap_env(env)
-    run_AtariGame(episodes, model, env, env_name, lifes, agent, brain, replay_start_size, update_frequency, False)  # last params = True 记录 q value
-    # data_save4cnn(model, env_name, brain, agent)
+    run_AtariGame(episodes, model, env, env_name, lifes, agent, brain, dataStorage, replay_start_size, update_frequency, False)  # last params = True 记录 q value
+    # writeData2File(model, env_name, brain, agent, dataStorage)

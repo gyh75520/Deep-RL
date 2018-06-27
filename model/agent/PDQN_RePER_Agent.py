@@ -95,7 +95,7 @@ class PDQN_RePER_Agent(agent):
         # 每隔 replace_target_iter 步 替换 target_net 参数
         if self.learn_step_counter % self.replace_target_iter == 0:
             self.brain.replace_target_params()
-            print('\nPDQN_Agent learn_step_counter=', self.learn_step_counter, ' target_params_replaced')
+            print('\nPDQN_RePER_Agent learn_step_counter=', self.learn_step_counter, ' target_params_replaced')
             print('epsilon:', self.epsilon, '\n')
             # print('printq', self.print_q)
 

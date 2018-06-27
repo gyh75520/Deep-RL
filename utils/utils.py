@@ -23,6 +23,45 @@ def mkdir(path):
         print(path + ' 目录已存在')
 
 
+def writeData2File(algorithm_name, env_name, Brain, Agent, DataStorage):
+    import datetime
+    nowTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 现在
+    filename = cleanstring(env_name) + "_" + algorithm_name + '_' + cleanstring(nowTime)
+    SETUP = cleanstring(nowTime) + '|' + env_name + "|algorithm:" + algorithm_name + "\n"
+
+    brainDict = Brain.__dict__
+    agentDict = Agent.__dict__
+    dataStorageDict = DataStorage.__dict__
+
+    SETUP += "'''Brain\n"
+    for k, v in brainDict.items():
+        SETUP += str(k) + ":" + str(v) + "\n"
+    SETUP += "'''\n"
+
+    SETUP += "'''Agent\n"
+    for k, v in agentDict.items():
+        if k not in ['memory']:
+            SETUP += str(k) + ":" + str(v) + "\n"
+    SETUP += "'''\n"
+
+    # SETUP += "# Brain:" + str(Brain.__dict__) + "\n"
+    # SETUP += "# DataStorage:" + str(DataStorage.__dict__) + "\n"
+    outStr = "# Experiment_SETUP:\"" + SETUP + "\n"
+    # outStr += "\nimport pylab\n"
+    # rewards
+    for k, v in dataStorageDict.items():
+        outStr += "\n" + str(k) + " = " + str(v) + "\n"
+    # outStr += "\nRewards = " + str(DataStorage.rewards) + "\n"
+
+    path = cleanstring(env_name) + algorithm_name + "_data"
+    mkdir(path)
+    f = open(path + "/" + filename + ".py", "w")
+    f.write(outStr)
+    f.close()
+
+    print("\nsave to ", path, "successful!")
+
+
 def data_save4mlp(algorithm_name, env_name, Brain, Agent):
     import datetime
     nowTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 现在
@@ -55,7 +94,7 @@ def data_save4mlp(algorithm_name, env_name, Brain, Agent):
 def data_save4cnn(algorithm_name, env_name, Brain, Agent):
     import datetime
     nowTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 现在
-    filename = cleanstring(nowTime) + '_' + env_name + "_" + algorithm_name
+    filename = cleanstring(env_name) + "_" + algorithm_name + '_' + cleanstring(nowTime)
     SETUP = cleanstring(nowTime) + '|' + env_name + "|algorithm:" + algorithm_name + \
         "|filters_per_layer:" + str(Brain.filters_per_layer) + "|kernel_size_per_layer:" + \
         str(Brain.kernel_size_per_layer) + "|conv_strides_per_layer:" + str(Brain.conv_strides_per_layer) +\
@@ -74,7 +113,7 @@ def data_save4cnn(algorithm_name, env_name, Brain, Agent):
     if hasattr(Agent, 'q_change_list'):
         outStr += "\nq_change_list = " + str(Agent.q_change_list) + "\n"
 
-    path = env_name + algorithm_name + "_data"
+    path = cleanstring(env_name) + algorithm_name + "_data"
     mkdir(path)
     f = open(path + "/" + filename + ".py", "w")
     f.write(outStr)
@@ -123,9 +162,51 @@ def get_rewards(dir):
     return Rewards_mean
 
 
-if __name__ == '__main__':
+def get_Q(dir):
+    import numpy as np
+    files = get_files(dir)
+    Q_list = []
 
-    datas = [Rewards_1, Rewards_2]
-    data_labels = ['ddqnPer', 'ddqn']
+    Q_list = []
+    for file in files:
+        file_name = file.replace(".py", '')
+        # str = "from %s.%s import q_change_list" % (dir, file_name)
+        # str += '\nQ_list.append(q_change_list)'
+        str = "from %s.%s import Q_value" % (dir, file_name)
+        str += '\nQ_list.append(Q_value)'
+        # print(str)
+        exec(str)
+
+    Q_total = np.zeros(len(Q_list[0]))
+    for Q in Q_list:
+        Q = np.array(Q)
+        Q_total += Q
+    Q_mean = Q_total / len(Q_list)
+    return Q_mean
+
+
+def linearSmooth3(inputs):
+    import numpy as np
+    print(inputs[0: 10])
+    N = inputs.shape[0]
+    out = np.zeros(N)
+    out[0] = (5.0 * inputs[0] + 2.0 * inputs[1] - inputs[2]) / 6.0
+    i = 1
+    while i < (N - 1):
+        out[i] = (inputs[i - 1] + inputs[i] + inputs[i + 1]) / 3.0
+        i += 1
+
+    out[N - 1] = (5.0 * inputs[N - 1] + 2.0 * inputs[N - 2] - inputs[N - 3]) / 6.0
+
+    # print(out[0: 10])
+    return out
+
+
+if __name__ == '__main__':
+    import sys
+    sys.path.append("..")
+    Rewards = get_rewards('Acrobotv1DQN_PER_Ipm_data')
+    datas = [Rewards]
+    data_labels = ['dqn']
     ylabel = 'reward'
     plot("title", datas, data_labels, ylabel)

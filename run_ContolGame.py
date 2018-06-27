@@ -1,16 +1,16 @@
 import gym
 import numpy as np
-from utils import data_save4mlp
+from utils import writeData2File, DataStorage
 from config import pqExp_config as configs
 
 
-def run_controlGame(episode, env, Agent, plt_q=False):
+def run_controlGame(episode, env, Agent, DataStorage, is_storeQ=False):
     # set_memory_with_random()
     for i_episode in range(episode):
         observation = env.reset()
-        if plt_q:
-            q_change = [observation]
-            action_change = Agent.choose_action(observation)
+        if is_storeQ:
+            InitState = [observation]
+            FirstAction = Agent.choose_action(observation)
         totalR = 0
         while True:
             # env.render()
@@ -23,23 +23,23 @@ def run_controlGame(episode, env, Agent, plt_q=False):
             observation = observation_
             if done:
                 print('episode: ', i_episode, ' epsilon: ', Agent.epsilon, 'total_reward:', totalR)
-                if plt_q:
-                    Agent.statistical_values(totalR, q_change, action_change)
-                else:
-                    Agent.statistical_values(totalR)
+                if is_storeQ:
+                    Q_value = Agent.brain.predict_eval_action(InitState)
+                    DataStorage.store_Q(Q_value[0][FirstAction])
+                DataStorage.store_reward(totalR)
                 break
 
     # Brain.save()  # 存储神经网络
 
 
-def run_Pendulum(episode, env, Agent, plt_q=False):
+def run_Pendulum(episode, env, Agent, DataStorage, is_storeQ=False):
     ACTION_SPACE = 11
     # set_memory_with_random()
     for i_episode in range(episode):
         observation = env.reset()
-        if plt_q:
-            q_change = [observation]
-            action_change = Agent.choose_action(observation)
+        if is_storeQ:
+            InitState = [observation]
+            FirstAction = Agent.choose_action(observation)
         totalR = 0
         while True:
             # env.render()
@@ -54,10 +54,10 @@ def run_Pendulum(episode, env, Agent, plt_q=False):
             observation = observation_
             if done:
                 print('episode: ', i_episode, ' epsilon: ', Agent.epsilon, 'total_reward:', totalR)
-                if plt_q:
-                    Agent.statistical_values(totalR, q_change, action_change)
-                else:
-                    Agent.statistical_values(totalR)
+                if is_storeQ:
+                    Q_value = Agent.brain.predict_eval_action(InitState)
+                    DataStorage.store_Q(Q_value[0][FirstAction])
+                DataStorage.store_reward(totalR)
                 break
 
     # Brain.save()  # 存储神经网络
@@ -138,8 +138,10 @@ def run_Game(model, env_name, episodes):
         LAMBDA=LAMBDA,
     )
 
+    dataStorage = DataStorage()
+
     if env_name == 'Pendulum-v0':
         run_Pendulum(episodes, env, agent, False)
     else:
-        run_controlGame(episodes, env, agent, False)  # 4-th params = True 记录 q value
-    data_save4mlp(model, env_name, brain, agent)
+        run_controlGame(episodes, env, agent, dataStorage, True)  # 4-th params = True 记录 q value
+    writeData2File(model, env_name, brain, agent, dataStorage)
